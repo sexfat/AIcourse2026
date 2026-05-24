@@ -1,0 +1,949 @@
+<!doctype html>
+<html lang="zh-Hant"><head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Codex 基礎教學：初階工程師的一小時入門</title>
+  <style>
+    :root {
+      --bg: #101418;
+      --panel: #171d23;
+      --panel-2: #202832;
+      --text: #f4f7fa;
+      --muted: #a8b3bf;
+      --line: #33404d;
+      --accent: #46c2a8;
+      --accent-2: #f5b85f;
+      --accent-3: #7aa8ff;
+      --danger: #ff7a7a;
+      --shadow: 0 24px 70px rgba(0, 0, 0, 0.36);
+      --radius: 8px;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background:
+        linear-gradient(135deg, rgba(70, 194, 168, 0.12), transparent 34%),
+        linear-gradient(225deg, rgba(245, 184, 95, 0.08), transparent 30%),
+        var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      overflow: hidden;
+    }
+
+    .deck {
+      width: 100vw;
+      height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 32px;
+    }
+
+    .slide {
+      width: min(1280px, calc(100vw - 64px));
+      aspect-ratio: 16 / 9;
+      max-height: calc(100vh - 64px);
+      background: rgba(23, 29, 35, 0.94);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      box-shadow: var(--shadow);
+      border-radius: 12px;
+      padding: 58px 68px;
+      display: none;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .slide.active {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .slide::after {
+      content: "";
+      position: absolute;
+      inset: auto 0 0 0;
+      height: 6px;
+      background: linear-gradient(90deg, var(--accent), var(--accent-2), var(--accent-3));
+    }
+
+    .eyebrow {
+      color: var(--accent);
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 16px;
+      letter-spacing: 0;
+    }
+
+    h1, h2 {
+      margin: 0;
+      letter-spacing: 0;
+      line-height: 1.08;
+    }
+
+    h1 {
+      font-size: clamp(48px, 7vw, 92px);
+      max-width: 900px;
+    }
+
+    h2 {
+      font-size: clamp(38px, 4.5vw, 62px);
+      max-width: 980px;
+    }
+
+    h3 {
+      font-size: 26px;
+      margin: 0 0 14px;
+      letter-spacing: 0;
+    }
+
+    p {
+      font-size: 24px;
+      line-height: 1.5;
+      color: var(--muted);
+      margin: 20px 0 0;
+      max-width: 980px;
+    }
+
+    ul {
+      margin: 30px 0 0;
+      padding: 0;
+      list-style: none;
+      display: grid;
+      gap: 16px;
+    }
+
+    li {
+      font-size: 25px;
+      line-height: 1.42;
+      color: var(--text);
+      display: grid;
+      grid-template-columns: 18px 1fr;
+      gap: 14px;
+      align-items: start;
+    }
+
+    li > span {
+      min-width: 0;
+    }
+
+    li::before {
+      content: "";
+      width: 10px;
+      height: 10px;
+      margin-top: 13px;
+      background: var(--accent);
+      border-radius: 50%;
+    }
+
+    strong {
+      color: var(--text);
+      font-weight: 800;
+    }
+
+    code {
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 6px;
+      padding: 0.12em 0.35em;
+      color: #d7fff5;
+      font-size: 0.88em;
+    }
+
+    pre {
+      margin: 24px 0 0;
+      padding: 22px 24px;
+      background: #0b0f13;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      color: #e9f1f8;
+      font-size: 21px;
+      line-height: 1.5;
+      white-space: pre-wrap;
+      overflow: hidden;
+    }
+
+    .title-meta {
+      display: flex;
+      gap: 14px;
+      margin-top: auto;
+      color: var(--muted);
+      font-size: 20px;
+      flex-wrap: wrap;
+    }
+
+    .pill {
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 8px 14px;
+      background: rgba(255, 255, 255, 0.04);
+    }
+
+    .grid-2,
+    .grid-3 {
+      display: grid;
+      gap: 18px;
+      margin-top: 30px;
+    }
+
+    .grid-2 {
+      grid-template-columns: 1fr 1fr;
+    }
+
+    .grid-3 {
+      grid-template-columns: repeat(3, 1fr);
+    }
+
+    .box {
+      background: var(--panel-2);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 22px;
+      min-height: 150px;
+    }
+
+    .box p {
+      font-size: 20px;
+      margin-top: 10px;
+      line-height: 1.42;
+    }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      color: #0b1411;
+      background: var(--accent);
+      border-radius: 6px;
+      padding: 5px 9px;
+      font-size: 15px;
+      font-weight: 800;
+      margin-bottom: 14px;
+    }
+
+    .tag.alt {
+      background: var(--accent-2);
+      color: #1d1406;
+    }
+
+    .tag.blue {
+      background: var(--accent-3);
+      color: #071124;
+    }
+
+    .compare {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+      margin-top: 30px;
+    }
+
+    .bad {
+      border-color: rgba(255, 122, 122, 0.45);
+    }
+
+    .bad .tag {
+      background: var(--danger);
+      color: #1b0505;
+    }
+
+    .flow {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 12px;
+      margin-top: 34px;
+      align-items: stretch;
+    }
+
+    .step {
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 18px 16px;
+      background: rgba(255, 255, 255, 0.04);
+      min-height: 125px;
+    }
+
+    .step b {
+      display: block;
+      color: var(--accent-2);
+      font-size: 18px;
+      margin-bottom: 10px;
+    }
+
+    .step span {
+      font-size: 20px;
+      line-height: 1.35;
+      color: var(--text);
+    }
+
+    .footer {
+      position: absolute;
+      left: 68px;
+      right: 68px;
+      bottom: 26px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      color: var(--muted);
+      font-size: 15px;
+    }
+
+    .progress {
+      height: 4px;
+      width: 220px;
+      background: rgba(255, 255, 255, 0.12);
+      border-radius: 999px;
+      overflow: hidden;
+    }
+
+    .progress span {
+      display: block;
+      height: 100%;
+      width: 0;
+      background: var(--accent);
+    }
+
+    .notes {
+      margin-top: auto;
+      padding-top: 18px;
+      color: var(--muted);
+      font-size: 18px;
+    }
+
+    .small li {
+      font-size: 21px;
+    }
+
+    .small li::before {
+      margin-top: 10px;
+    }
+
+    .tight pre {
+      font-size: 19px;
+      padding: 18px 20px;
+      margin-top: 18px;
+    }
+
+    .compact-list {
+      gap: 12px;
+    }
+
+    .compact-list li {
+      font-size: 23px;
+    }
+
+    .command-strip {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin: 14px 0 4px 32px;
+    }
+
+    .command-strip code {
+      white-space: nowrap;
+      font-size: 20px;
+      padding: 8px 10px;
+    }
+
+    .review-list {
+      gap: 15px;
+    }
+
+    .command-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px 18px;
+      margin-top: 28px;
+    }
+
+    .command-row {
+      display: grid;
+      grid-template-columns: 132px 1fr;
+      gap: 14px;
+      align-items: start;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 15px 16px;
+    }
+
+    .command-row code {
+      white-space: nowrap;
+      text-align: center;
+    }
+
+    .command-row span {
+      color: var(--text);
+      font-size: 20px;
+      line-height: 1.35;
+    }
+
+    .slash-slide .command-grid {
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+    }
+
+    .slash-slide .command-row {
+      grid-template-columns: 1fr;
+      gap: 9px;
+      min-height: 118px;
+    }
+
+    .slash-slide .command-row code {
+      text-align: left;
+      width: max-content;
+    }
+
+    .slash-slide .command-row span {
+      font-size: 18px;
+    }
+
+    .slash-slide p {
+      font-size: 21px;
+      margin-top: 18px;
+    }
+
+    @media (max-width: 900px) {
+      body {
+        overflow: auto;
+      }
+
+      .deck {
+        min-height: 100vh;
+        height: auto;
+        padding: 12px;
+      }
+
+      .slide {
+        width: calc(100vw - 24px);
+        min-height: calc(100vh - 24px);
+        max-height: none;
+        aspect-ratio: auto;
+        padding: 34px 26px 58px;
+      }
+
+      h1 {
+        font-size: 44px;
+      }
+
+      h2 {
+        font-size: 34px;
+      }
+
+      p, li {
+        font-size: 20px;
+      }
+
+      pre {
+        font-size: 16px;
+      }
+
+      .tight h2 {
+        font-size: 31px;
+      }
+
+      .tight pre {
+        font-size: 15px;
+        padding: 14px 16px;
+        margin-top: 14px;
+      }
+
+      .compact-list {
+        gap: 10px;
+        margin-top: 22px;
+      }
+
+      .compact-list li {
+        font-size: 19px;
+      }
+
+      .command-strip {
+        margin: 10px 0 2px 32px;
+      }
+
+      .command-strip code {
+        font-size: 16px;
+        padding: 6px 8px;
+      }
+
+      .command-grid {
+        grid-template-columns: 1fr;
+        gap: 10px;
+      }
+
+      .command-row {
+        grid-template-columns: 112px 1fr;
+      }
+
+      .command-row span {
+        font-size: 17px;
+      }
+
+      .slash-slide h2 {
+        font-size: 30px;
+      }
+
+      .slash-slide .command-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        margin-top: 20px;
+      }
+
+      .slash-slide .command-row {
+        grid-template-columns: 1fr;
+        min-height: 88px;
+        padding: 12px;
+        gap: 7px;
+      }
+
+      .slash-slide .command-row code {
+        font-size: 15px;
+        padding: 5px 7px;
+      }
+
+      .slash-slide .command-row span {
+        font-size: 15px;
+        line-height: 1.28;
+      }
+
+      .slash-slide p {
+        font-size: 16px;
+        margin-top: 14px;
+      }
+
+      .grid-2,
+      .grid-3,
+      .compare,
+      .flow {
+        grid-template-columns: 1fr;
+      }
+
+      .footer {
+        left: 26px;
+        right: 26px;
+      }
+
+      .progress {
+        width: 120px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="deck" aria-live="polite">
+    <section class="slide active">
+      <div class="eyebrow">1 小時入門課</div>
+      <h1>Codex 基礎教學</h1>
+      <p>給初階工程師的實作導向介紹：理解 Codex、下對指令、完成文件整理與程式碼開發任務。</p>
+      <div class="title-meta">
+        <span class="pill">中文教學</span>
+        <span class="pill">保留 English commands</span>
+        <span class="pill">Demo + Practice</span>
+      </div>
+    </section>
+
+    <section class="slide">
+      <div class="eyebrow">Learning Goals</div>
+      <h2>今天結束後，你要能做到三件事</h2>
+      <ul>
+        <li>知道 Codex 和一般聊天 AI 的差異，以及它適合處理哪些工程任務。</li>
+        <li>會寫清楚的指令，讓 Codex 能讀檔、改檔、跑測試、整理結果。</li>
+        <li>能用 Codex 完成一個小型文件整理任務與一個小型程式碼任務。</li>
+      </ul>
+      <div class="notes">建議時間：3 分鐘</div>
+    </section>
+
+    <section class="slide">
+      <div class="eyebrow">What Is Codex</div>
+      <h2>Codex 是能操作專案的 AI 工程協作者</h2>
+      <div class="grid-3">
+        <div class="box">
+          <span class="tag">Read</span>
+          <h3>讀懂專案</h3>
+          <p>瀏覽資料夾、閱讀檔案、找出入口點、理解程式結構。</p>
+        </div>
+        <div class="box">
+          <span class="tag alt">Change</span>
+          <h3>修改內容</h3>
+          <p>編輯程式碼、文件、設定檔，並盡量遵守現有風格。</p>
+        </div>
+        <div class="box">
+          <span class="tag blue">Verify</span>
+          <h3>驗證結果</h3>
+          <p>執行指令、跑測試、看錯誤訊息，回報修改結果。</p>
+        </div>
+      </div>
+      <div class="notes">建議時間：4 分鐘</div>
+    </section>
+
+    <section class="slide">
+      <div class="eyebrow">Mental Model</div>
+      <h2>把 Codex 當成會問問題、會動手的 Junior Pair</h2>
+      <ul>
+        <li>你提供目標、背景、限制與驗收標準。</li>
+        <li>Codex 負責探索、提出修改、執行命令與回報結果。</li>
+        <li>你仍然要審查重要變更，尤其是刪除資料、改設定、部署與安全相關操作。</li>
+      </ul>
+      <pre>不要只說：「幫我修好」
+改成：「這個 API 在空資料時會 500，請找出原因並修正，最後跑測試確認。」</pre>
+      <div class="notes">建議時間：4 分鐘</div>
+    </section>
+
+    <section class="slide">
+      <div class="eyebrow">Workspace</div>
+      <h2>使用前先理解工作區</h2>
+      <div class="grid-2">
+        <div class="box">
+          <h3>Codex 看得到什麼</h3>
+          <ul class="small">
+            <li>目前專案資料夾中的檔案</li>
+            <li>終端機指令輸出</li>
+            <li>工具回傳的檢查結果</li>
+          </ul>
+        </div>
+        <div class="box">
+          <h3>你要注意什麼</h3>
+          <ul class="small">
+            <li>確認目前資料夾是正確專案</li>
+            <li>重要修改前先有 git 狀態</li>
+            <li>不要把 secret 寫進 prompt 或檔案</li>
+          </ul>
+        </div>
+      </div>
+      <pre>常用起手式：
+「先幫我看這個專案結構，不要修改檔案，整理出入口檔案與主要模組。」</pre>
+      <div class="notes">建議時間：5 分鐘</div>
+    </section>
+
+    <section class="slide">
+      <div class="eyebrow">Command Types</div>
+      <h2>初學者最常用的 6 類指令</h2>
+      <div class="grid-3">
+        <div class="box"><h3>理解</h3><p>Explain / summarize / trace flow</p></div>
+        <div class="box"><h3>修改</h3><p>Implement / update / refactor</p></div>
+        <div class="box"><h3>除錯</h3><p>Debug / fix error / inspect logs</p></div>
+        <div class="box"><h3>測試</h3><p>Run tests / add tests / verify</p></div>
+        <div class="box"><h3>文件</h3><p>README / guide / changelog</p></div>
+        <div class="box"><h3>版本控制</h3><p>Diff / commit message / PR summary</p></div>
+      </div>
+      <div class="notes">建議時間：5 分鐘</div>
+    </section>
+
+    <section class="slide slash-slide">
+      <div class="eyebrow">Slash Commands</div>
+      <h2>像 <code>/model</code> 這類指令，是控制 Codex 工作階段</h2>
+      <div class="command-grid">
+        <div class="command-row"><code>/help</code><span>查看目前版本支援的指令。</span></div>
+        <div class="command-row"><code>/model</code><span>切換模型與推理強度。</span></div>
+        <div class="command-row"><code>/status</code><span>查看模型、權限與用量。</span></div>
+        <div class="command-row"><code>/permissions</code><span>調整 Codex 可以做哪些操作。</span></div>
+        <div class="command-row"><code>/init</code><span>建立 AGENTS.md 專案規則。</span></div>
+        <div class="command-row"><code>/review</code><span>針對目前變更做 code review。</span></div>
+        <div class="command-row"><code>/compact</code><span>對話很長時壓縮上下文。</span></div>
+        <div class="command-row"><code>/new</code><span>開啟新的想法或新任務。</span></div>
+      </div>
+      <p>教學提醒：Slash command 是「控制介面」，自然語言 Prompt 是「交代任務」。</p>
+      <div class="notes">建議時間：5 分鐘</div>
+    </section>
+
+    <section class="slide">
+      <div class="eyebrow">Explain Prompts</div>
+      <h2>理解專案：先讓 Codex 建立地圖</h2>
+      <pre>請先閱讀這個專案，不要修改檔案。
+
+請回覆：
+1. 專案用途
+2. 主要資料夾與檔案
+3. 程式入口點
+4. 本機如何啟動
+5. 你建議我先看哪 3 個檔案</pre>
+      <ul>
+        <li>適合接手新專案、讀別人的程式、快速找方向。</li>
+        <li>先要求「不要修改檔案」，可以把探索和實作分開。</li>
+      </ul>
+      <div class="notes">建議時間：4 分鐘</div>
+    </section>
+
+    <section class="slide">
+      <div class="eyebrow">Edit Prompts</div>
+      <h2>修改功能：給目標，也給限制</h2>
+      <pre>請幫我在會員列表加入搜尋功能。
+
+限制：
+- 不要改資料庫 schema
+- 優先沿用現有 component style
+- 搜尋欄位包含 name 與 email
+
+完成後：
+- 說明改了哪些檔案
+- 跑現有測試或提供無法跑的原因</pre>
+      <ul>
+        <li>好的限制能減少過度改動。</li>
+        <li>要求驗證，讓任務不只停在「看起來有改」。</li>
+      </ul>
+      <div class="notes">建議時間：5 分鐘</div>
+    </section>
+
+    <section class="slide">
+      <div class="eyebrow">Debug Prompts</div>
+      <h2>除錯：提供錯誤、重現步驟、期望行為</h2>
+      <pre>現在執行 `npm test` 會失敗。
+
+請你：
+1. 先跑測試確認錯誤
+2. 找出最可能的原因
+3. 做最小修改修正
+4. 再跑一次測試
+5. 用條列說明 root cause</pre>
+      <div class="compare">
+        <div class="box bad">
+          <span class="tag">不清楚</span>
+          <p>「壞了，幫我看。」</p>
+        </div>
+        <div class="box">
+          <span class="tag">清楚</span>
+          <p>「這個 command 失敗，請重現、定位、最小修正、驗證。」</p>
+        </div>
+      </div>
+      <div class="notes">建議時間：5 分鐘</div>
+    </section>
+
+    <section class="slide tight">
+      <div class="eyebrow">Verify Prompts</div>
+      <h2>驗證不是附加工作，是工程工作的一部分</h2>
+      <ul class="compact-list">
+        <li>請 Codex 跑既有測試，例如：</li>
+        <li>沒有測試時，要求它提供手動驗收步驟。</li>
+        <li>前端任務可要求截圖檢查、RWD 檢查、互動流程檢查。</li>
+      </ul>
+      <div class="command-strip" aria-label="常見測試指令">
+        <code>npm test</code>
+        <code>pytest</code>
+        <code>go test ./...</code>
+      </div>
+      <pre>請完成修改後驗證：
+- 能跑自動測試就跑
+- 無法跑請說明原因
+- 補上 3 個我可以手動檢查的步驟</pre>
+      <div class="notes">建議時間：4 分鐘</div>
+    </section>
+
+    <section class="slide">
+      <div class="eyebrow">Prompt Formula</div>
+      <h2>好指令的 5 個欄位</h2>
+      <div class="flow">
+        <div class="step"><b>1. 目標</b><span>要完成什麼</span></div>
+        <div class="step"><b>2. 背景</b><span>目前狀況與相關檔案</span></div>
+        <div class="step"><b>3. 限制</b><span>不能改什麼、偏好什麼</span></div>
+        <div class="step"><b>4. 輸出</b><span>要程式、摘要、表格或步驟</span></div>
+        <div class="step"><b>5. 驗收</b><span>如何確認完成</span></div>
+      </div>
+      <pre>模板：
+請幫我 [目標]。
+背景是 [目前狀況]。
+限制是 [限制條件]。
+完成後請 [輸出格式]。
+驗收方式是 [測試或檢查方式]。</pre>
+      <div class="notes">建議時間：5 分鐘</div>
+    </section>
+
+    <section class="slide">
+      <div class="eyebrow">Demo A</div>
+      <h2>現場示範：文件與資料夾整理</h2>
+      <div class="flow">
+        <div class="step"><b>Step 1</b><span>請 Codex 掃描資料夾</span></div>
+        <div class="step"><b>Step 2</b><span>分類檔案與命名問題</span></div>
+        <div class="step"><b>Step 3</b><span>產生整理方案</span></div>
+        <div class="step"><b>Step 4</b><span>建立 README 或索引</span></div>
+        <div class="step"><b>Step 5</b><span>檢查結果</span></div>
+      </div>
+      <pre>示範指令：
+請掃描目前資料夾，不要移動檔案。
+幫我整理出檔案類型、可能用途，以及建議的分類資料夾。
+最後產生一份 README 草稿，說明這個資料夾內容。</pre>
+      <div class="notes">建議時間：7 分鐘</div>
+    </section>
+
+    <section class="slide">
+      <div class="eyebrow">Demo B</div>
+      <h2>現場示範：程式碼專案開發</h2>
+      <div class="flow">
+        <div class="step"><b>Step 1</b><span>理解架構</span></div>
+        <div class="step"><b>Step 2</b><span>指定小功能</span></div>
+        <div class="step"><b>Step 3</b><span>修改程式碼</span></div>
+        <div class="step"><b>Step 4</b><span>執行測試</span></div>
+        <div class="step"><b>Step 5</b><span>看 diff 與總結</span></div>
+      </div>
+      <pre>示範指令：
+請先看這個專案架構，找出前端入口與主要元件。
+接著幫我新增一個搜尋欄位，能用關鍵字過濾列表。
+請沿用現有樣式，完成後跑測試或提供手動驗收步驟。</pre>
+      <div class="notes">建議時間：8 分鐘</div>
+    </section>
+
+    <section class="slide">
+      <div class="eyebrow">Practice</div>
+      <h2>學員練習：兩選一，15 分鐘內完成</h2>
+      <div class="grid-2">
+        <div class="box">
+          <span class="tag">文件任務</span>
+          <h3>整理課程資料夾</h3>
+          <p>請 Codex 掃描資料夾、分類內容、產生 README，並列出後續整理建議。</p>
+        </div>
+        <div class="box">
+          <span class="tag alt">程式任務</span>
+          <h3>新增一個小功能</h3>
+          <p>請 Codex 理解專案後，新增搜尋、排序、空狀態或錯誤提示其中一項。</p>
+        </div>
+      </div>
+      <pre>練習要求：
+- 先讓 Codex 解釋，不要直接改
+- 再給明確限制與驗收方式
+- 完成後請它總結修改與測試結果</pre>
+      <div class="notes">建議時間：10 分鐘</div>
+    </section>
+
+    <section class="slide">
+      <div class="eyebrow">Review</div>
+      <h2>看 Codex 的成果時，先看這些</h2>
+      <ul class="review-list">
+        <li><span><strong>Scope：</strong>是否只改了任務需要的範圍？</span></li>
+        <li><span><strong>Behavior：</strong>是否真的符合原本目標？</span></li>
+        <li><span><strong>Tests：</strong>是否有跑測試，或至少有手動驗收步驟？</span></li>
+        <li><span><strong>Risk：</strong>是否改到設定、刪資料、改 API contract 或安全邏輯？</span></li>
+        <li><span><strong>Diff：</strong>重要任務一定要看變更差異。</span></li>
+      </ul>
+      <div class="notes">建議時間：4 分鐘</div>
+    </section>
+
+    <section class="slide">
+      <div class="eyebrow">Common Mistakes</div>
+      <h2>初學者常見錯誤</h2>
+      <div class="grid-2">
+        <div class="box bad">
+          <span class="tag">避免</span>
+          <ul class="small">
+            <li>一次丟太大任務</li>
+            <li>沒有說限制</li>
+            <li>沒有要求驗證</li>
+            <li>不看 diff 就接受修改</li>
+          </ul>
+        </div>
+        <div class="box">
+          <span class="tag">改成</span>
+          <ul class="small">
+            <li>拆成探索、修改、驗證</li>
+            <li>列出不能碰的範圍</li>
+            <li>要求測試與手動檢查</li>
+            <li>請它解釋修改理由</li>
+          </ul>
+        </div>
+      </div>
+      <div class="notes">建議時間：4 分鐘</div>
+    </section>
+
+    <section class="slide">
+      <div class="eyebrow">Best Practices</div>
+      <h2>跟 Codex 協作的基本節奏</h2>
+      <div class="flow">
+        <div class="step"><b>Explore</b><span>先讀懂，不急著改</span></div>
+        <div class="step"><b>Plan</b><span>確認修改範圍</span></div>
+        <div class="step"><b>Implement</b><span>小步修改</span></div>
+        <div class="step"><b>Verify</b><span>測試與手動檢查</span></div>
+        <div class="step"><b>Summarize</b><span>整理成果與風險</span></div>
+      </div>
+      <pre>推薦工作流：
+「先分析，不修改」→「提出方案」→「實作」→「跑測試」→「總結 diff」</pre>
+      <div class="notes">建議時間：4 分鐘</div>
+    </section>
+
+    <section class="slide">
+      <div class="eyebrow">Takeaway Template</div>
+      <h2>課後可直接複製的 Prompt</h2>
+      <pre>請先閱讀目前專案，不要修改檔案。
+請說明專案架構、入口點、啟動方式，以及你建議先看的檔案。
+
+接著請幫我完成：[具體任務]
+限制：
+- [限制 1]
+- [限制 2]
+
+完成後請：
+1. 說明改了哪些檔案
+2. 跑可用的測試
+3. 提供手動驗收步驟
+4. 列出你認為還有風險的地方</pre>
+      <div class="notes">建議時間：2 分鐘</div>
+    </section>
+
+    <section class="slide">
+      <div class="eyebrow">Closing</div>
+      <h2>把 Codex 用好，不是靠一句神奇指令</h2>
+      <ul>
+        <li>清楚描述目標，讓它知道終點。</li>
+        <li>給出限制，讓它知道邊界。</li>
+        <li>要求驗證，讓結果能被檢查。</li>
+        <li>審查 diff，保留工程師的判斷權。</li>
+      </ul>
+      <p>最實用的心法：把大任務拆成「理解、修改、驗證、總結」。</p>
+      <div class="notes">建議時間：2 分鐘</div>
+    </section>
+  </main>
+
+  <div class="footer">
+    <span id="counter">1 / 20</span>
+    <div class="progress" aria-hidden="true"><span id="bar"></span></div>
+    <span>← → / Space 切換投影片</span>
+  </div>
+
+  <script>
+    const slides = Array.from(document.querySelectorAll(".slide"));
+    const counter = document.getElementById("counter");
+    const bar = document.getElementById("bar");
+    let current = 0;
+
+    function showSlide(index) {
+      current = Math.max(0, Math.min(index, slides.length - 1));
+      slides.forEach((slide, slideIndex) => {
+        slide.classList.toggle("active", slideIndex === current);
+      });
+      counter.textContent = `${current + 1} / ${slides.length}`;
+      bar.style.width = `${((current + 1) / slides.length) * 100}%`;
+      history.replaceState(null, "", `#${current + 1}`);
+    }
+
+    function move(delta) {
+      showSlide(current + delta);
+    }
+
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "ArrowRight" || event.key === " " || event.key === "PageDown") {
+        event.preventDefault();
+        move(1);
+      }
+      if (event.key === "ArrowLeft" || event.key === "PageUp") {
+        event.preventDefault();
+        move(-1);
+      }
+      if (event.key === "Home") {
+        showSlide(0);
+      }
+      if (event.key === "End") {
+        showSlide(slides.length - 1);
+      }
+    });
+
+    document.addEventListener("click", (event) => {
+      const midpoint = window.innerWidth / 2;
+      move(event.clientX >= midpoint ? 1 : -1);
+    });
+
+    const initial = Number.parseInt(location.hash.replace("#", ""), 10);
+    showSlide(Number.isFinite(initial) ? initial - 1 : 0);
+  </script>
+
+
+</body></html>
