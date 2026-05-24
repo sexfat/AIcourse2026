@@ -1,0 +1,1145 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>生成式 AI 基礎介紹 — 課程講義</title>
+  <style>
+    :root {
+      --bg: #f8f9fb;
+      --surface: #ffffff;
+      --surface-2: #f1f4f8;
+      --border: #e2e8f0;
+      --text: #1a202c;
+      --muted: #64748b;
+      --accent: #0d9488;        /* teal */
+      --accent-light: #e6f7f5;
+      --accent-2: #d97706;      /* amber */
+      --accent-2-light: #fef3c7;
+      --accent-3: #2563eb;      /* blue */
+      --accent-3-light: #eff6ff;
+      --danger: #dc2626;
+      --danger-light: #fef2f2;
+      --radius: 8px;
+      font-family: "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", Inter, ui-sans-serif, system-ui, sans-serif;
+      font-size: 16px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.7;
+    }
+
+    /* ── Layout ── */
+    .page-wrap {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 48px 24px 80px;
+    }
+
+    /* ── Cover ── */
+    .cover {
+      background: linear-gradient(135deg, #0d9488 0%, #2563eb 100%);
+      color: #fff;
+      border-radius: 14px;
+      padding: 52px 48px;
+      margin-bottom: 48px;
+    }
+
+    .cover-eyebrow {
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      opacity: 0.8;
+      margin-bottom: 16px;
+    }
+
+    .cover h1 {
+      font-size: 40px;
+      font-weight: 900;
+      line-height: 1.15;
+      margin-bottom: 20px;
+    }
+
+    .cover-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 28px;
+    }
+
+    .cover-pill {
+      background: rgba(255,255,255,0.2);
+      border: 1px solid rgba(255,255,255,0.35);
+      border-radius: 999px;
+      padding: 6px 14px;
+      font-size: 14px;
+    }
+
+    /* ── TOC ── */
+    .toc {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 28px 32px;
+      margin-bottom: 48px;
+    }
+
+    .toc h2 {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--muted);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 16px;
+    }
+
+    .toc-section { margin-bottom: 14px; }
+
+    .toc-label {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--accent);
+      margin-bottom: 6px;
+    }
+
+    .toc-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .toc-links a {
+      color: var(--text);
+      text-decoration: none;
+      font-size: 14px;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 4px 10px;
+      transition: background 0.15s;
+    }
+
+    .toc-links a:hover { background: var(--accent-light); color: var(--accent); }
+
+    /* ── Section header ── */
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 18px 24px;
+      border-radius: var(--radius);
+      margin: 48px 0 28px;
+    }
+
+    .section-header.morning { background: var(--accent-light); border-left: 4px solid var(--accent); }
+    .section-header.afternoon { background: var(--accent-2-light); border-left: 4px solid var(--accent-2); }
+
+    .section-header .badge {
+      font-size: 12px;
+      font-weight: 800;
+      padding: 4px 10px;
+      border-radius: 999px;
+      white-space: nowrap;
+    }
+
+    .morning .badge { background: var(--accent); color: #fff; }
+    .afternoon .badge { background: var(--accent-2); color: #fff; }
+
+    .section-header h2 {
+      font-size: 22px;
+      font-weight: 800;
+    }
+
+    .section-header .time {
+      margin-left: auto;
+      font-size: 13px;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+
+    /* ── Article card ── */
+    .article {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 32px 36px;
+      margin-bottom: 24px;
+    }
+
+    .article-num {
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.1em;
+      color: var(--accent);
+      margin-bottom: 8px;
+    }
+
+    .article h3 {
+      font-size: 22px;
+      font-weight: 800;
+      margin-bottom: 16px;
+      line-height: 1.3;
+    }
+
+    .article p {
+      color: var(--muted);
+      margin-bottom: 12px;
+      font-size: 15px;
+      line-height: 1.75;
+    }
+
+    .article p strong { color: var(--text); }
+
+    /* ── Compare grid ── */
+    .compare {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      margin: 18px 0;
+    }
+
+    .card {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 18px 20px;
+    }
+
+    .card.teal   { background: var(--accent-light);   border-color: rgba(13,148,136,0.25); }
+    .card.amber  { background: var(--accent-2-light); border-color: rgba(217,119,6,0.25); }
+    .card.blue   { background: var(--accent-3-light); border-color: rgba(37,99,235,0.25); }
+    .card.red    { background: var(--danger-light);   border-color: rgba(220,38,38,0.25); }
+
+    .card-label {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 3px 8px;
+      border-radius: 4px;
+      margin-bottom: 10px;
+    }
+
+    .teal  .card-label { background: var(--accent);   color: #fff; }
+    .amber .card-label { background: var(--accent-2); color: #fff; }
+    .blue  .card-label { background: var(--accent-3); color: #fff; }
+    .red   .card-label { background: var(--danger);   color: #fff; }
+
+    .card h4 {
+      font-size: 15px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .card p { font-size: 14px; margin: 0; }
+
+    /* ── Info box ── */
+    .info-box {
+      border-left: 3px solid var(--accent);
+      background: var(--accent-light);
+      border-radius: 0 var(--radius) var(--radius) 0;
+      padding: 14px 18px;
+      margin: 16px 0;
+      font-size: 14.5px;
+      color: var(--text);
+    }
+
+    .info-box.amber { border-color: var(--accent-2); background: var(--accent-2-light); }
+    .info-box.blue  { border-color: var(--accent-3); background: var(--accent-3-light); }
+    .info-box.red   { border-color: var(--danger);   background: var(--danger-light); }
+
+    /* ── Flow steps ── */
+    .flow {
+      display: grid;
+      gap: 10px;
+      margin: 18px 0;
+    }
+
+    .flow-5 { grid-template-columns: repeat(5, 1fr); }
+    .flow-4 { grid-template-columns: repeat(4, 1fr); }
+    .flow-3 { grid-template-columns: repeat(3, 1fr); }
+
+    .step {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px 12px;
+      text-align: center;
+    }
+
+    .step b {
+      display: block;
+      font-size: 12px;
+      color: var(--accent);
+      margin-bottom: 6px;
+    }
+
+    .step span { font-size: 13px; line-height: 1.4; color: var(--muted); }
+
+    /* ── Code / pre ── */
+    pre, code {
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+    }
+
+    code {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 1px 6px;
+      font-size: 13px;
+      color: #0d6e62;
+    }
+
+    pre {
+      background: #f1f5f9;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 18px 20px;
+      font-size: 13.5px;
+      line-height: 1.65;
+      color: #1e293b;
+      white-space: pre-wrap;
+      overflow-x: auto;
+      margin: 16px 0;
+    }
+
+    /* ── Bullet list ── */
+    .bullet-list {
+      list-style: none;
+      padding: 0;
+      margin: 12px 0;
+      display: grid;
+      gap: 8px;
+    }
+
+    .bullet-list li {
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+      font-size: 14.5px;
+      line-height: 1.65;
+    }
+
+    .bullet-list li::before {
+      content: "";
+      width: 7px;
+      height: 7px;
+      background: var(--accent);
+      border-radius: 50%;
+      margin-top: 8px;
+      flex-shrink: 0;
+    }
+
+    /* ── Analogy box ── */
+    .analogy {
+      background: #fffbeb;
+      border: 1px solid #fde68a;
+      border-radius: var(--radius);
+      padding: 16px 20px;
+      margin: 16px 0;
+      font-size: 14.5px;
+    }
+
+    .analogy-label {
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      color: var(--accent-2);
+      margin-bottom: 6px;
+    }
+
+    /* ── Prompt template ── */
+    .prompt-box {
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      border-top: 3px solid var(--accent-3);
+      border-radius: var(--radius);
+      padding: 18px 20px;
+      margin: 16px 0;
+    }
+
+    .prompt-label {
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      color: var(--accent-3);
+      margin-bottom: 8px;
+    }
+
+    /* ── Practice card ── */
+    .practice-card {
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      margin-bottom: 16px;
+    }
+
+    .practice-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 20px;
+      background: var(--surface-2);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .practice-header h4 { font-size: 16px; font-weight: 700; }
+
+    .practice-header a {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--accent-3);
+      text-decoration: none;
+      padding: 6px 14px;
+      border: 1px solid var(--accent-3);
+      border-radius: 6px;
+      transition: background 0.15s;
+    }
+
+    .practice-header a:hover { background: var(--accent-3-light); }
+
+    .practice-body {
+      padding: 18px 20px;
+      font-size: 14.5px;
+      color: var(--muted);
+    }
+
+    .practice-body strong { color: var(--text); }
+
+    /* ── Table ── */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14.5px;
+      margin: 16px 0;
+    }
+
+    th {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      padding: 10px 14px;
+      text-align: left;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--muted);
+    }
+
+    td {
+      border: 1px solid var(--border);
+      padding: 10px 14px;
+      vertical-align: top;
+    }
+
+    tr:nth-child(even) td { background: var(--bg); }
+
+    /* ── Divider ── */
+    hr {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 24px 0;
+    }
+
+    /* ── Footer ── */
+    .page-footer {
+      text-align: center;
+      color: var(--muted);
+      font-size: 13px;
+      margin-top: 60px;
+      padding-top: 24px;
+      border-top: 1px solid var(--border);
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 640px) {
+      .cover { padding: 32px 24px; }
+      .cover h1 { font-size: 28px; }
+      .article { padding: 22px 20px; }
+      .compare, .flow-5, .flow-4, .flow-3 { grid-template-columns: 1fr; }
+      .section-header .time { display: none; }
+    }
+
+    /* ── Print ── */
+    @media print {
+      body { background: #fff; }
+      .article { break-inside: avoid; }
+      .toc a { color: var(--text); }
+    }
+  </style>
+</head>
+<body>
+<div class="page-wrap">
+
+  <!-- Cover -->
+  <div class="cover">
+    <div class="cover-eyebrow">AI 實務課程 · 課程講義</div>
+    <h1>生成式 AI 基礎介紹</h1>
+    <p style="opacity:.85;font-size:15px;margin-top:8px">從工程師視角理解 AI 的本質、掌握 Prompt 技巧，並實際用 AI 工具提升開發效率。</p>
+    <div class="cover-meta">
+      <span class="cover-pill">對象：軟體工程師</span>
+      <span class="cover-pill">上午 9:00 – 12:00 理論基礎</span>
+      <span class="cover-pill">下午 13:30 – 16:30 實戰演練</span>
+      <span class="cover-pill">共 6 小時</span>
+    </div>
+  </div>
+
+  <!-- TOC -->
+  <div class="toc">
+    <h2>目錄</h2>
+    <div class="toc-section">
+      <div class="toc-label">上午 — 理論基礎</div>
+      <div class="toc-links">
+        <a href="#gen-ai">生成式 AI 是什麼</a>
+        <a href="#token">Token 是什麼</a>
+        <a href="#llm">LLM 如何運作</a>
+        <a href="#prompt">Prompt Engineering</a>
+        <a href="#agent">AI Agent</a>
+        <a href="#mcp">MCP 協議</a>
+        <a href="#agent-skill">Agent Skill</a>
+        <a href="#tools">Claude Code &amp; Codex</a>
+      </div>
+    </div>
+    <div class="toc-section" style="margin-bottom:0">
+      <div class="toc-label">下午 — 實戰演練</div>
+      <div class="toc-links">
+        <a href="#practice-debug">Debug 任務</a>
+        <a href="#practice-ui">UI Design 任務</a>
+        <a href="#practice-api">API Test 任務</a>
+        <a href="#best-practices">協作心法</a>
+        <a href="#prompt-template">Prompt 模板</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════ MORNING ═══════════ -->
+  <div class="section-header morning" id="morning">
+    <span class="badge">上午</span>
+    <h2>生成式 AI 基礎介紹</h2>
+    <span class="time">9:00 – 12:00</span>
+  </div>
+
+  <!-- 1. 生成式 AI -->
+  <div class="article" id="gen-ai">
+    <div class="article-num">主題 01</div>
+    <h3>傳統程式 vs 生成式 AI：根本的典範轉移</h3>
+
+    <div class="compare">
+      <div class="card blue">
+        <div class="card-label">傳統程式</div>
+        <h4>規則驅動</h4>
+        <p>輸入資料 ＋ 工程師寫死的規則（If/Else、演算法）＝ 輸出結果。<br>工程師扮演「上帝」，所有邏輯與邊界條件都必須明確定義；漏寫一個 <code>if</code>，系統就會噴 Bug。</p>
+      </div>
+      <div class="card teal">
+        <div class="card-label">生成式 AI</div>
+        <h4>機率驅動</h4>
+        <p>餵入海量資料 ＋ 模型訓練 ＝ 機器自己找出潛在規則。<br>工程師不再寫死規則，而是給予「提示與上下文（Prompt）」，AI 基於統計規律去「憑空創造」新內容。</p>
+      </div>
+    </div>
+
+    <div class="info-box">
+      <strong>一句話區分：</strong>傳統 AI 拿來做<strong>分類與判斷</strong>（垃圾信偵測、圖片辨識）；生成式 AI 拿來<strong>創造新東西</strong>（寫程式、畫圖、生成報告）。
+    </div>
+
+    <p>生成式 AI 的本質是「<strong>超級文字接龍機</strong>」，根據你給的前文，計算下一個字或像素「最有可能出現的是什麼」，進而組合出程式碼、圖片或文章。</p>
+  </div>
+
+  <!-- 2. Token -->
+  <div class="article" id="token">
+    <div class="article-num">主題 02</div>
+    <h3>Token：語言模型的「文字積木」</h3>
+
+    <p>AI 看不懂人類的完整句子。它必須先把文字切解成一塊塊的 <strong>Token</strong>，轉成數字才能進行數學運算。Token 是生成式 AI 計算成本與理解語言的最基本單位。</p>
+
+    <div class="analogy">
+      <div class="analogy-label">工程師隱喻</div>
+      把 Token 想像成<strong>「文字積木（Lego 積木）」</strong>。每塊積木有專屬編號（Token ID），意義相近的積木在數學空間中距離相近，而語言模型的工作就是——根據目前擺好的積木組合，「猜」下一塊最合適的積木。
+    </div>
+
+    <h4 style="font-size:16px;margin:18px 0 10px;font-weight:700;">Token 的四大特性</h4>
+
+    <ul class="bullet-list">
+      <li><strong>切法不等於一個字：</strong>「Apple」、「APPLE」、「 Apple」（前面有空格）是三個不同 Token；中文有時數字合成一個 Token，有時一字被切成多塊；標點符號也是獨立 Token。</li>
+      <li><strong>每個 Token 有唯一 ID：</strong>Llama 模型中，編號 0 的 Token 就是「！（驚嘆號）」。電腦只懂數字，因此所有文字最終都被轉成整數 ID。</li>
+      <li><strong>ID 再轉為高維度向量（Embedding）：</strong>透過 Embedding Table「查表」，每個 Token ID 轉成一排帶有語意的數字向量。意義相近的字（如 Apple、iPhone、蘋果）在向量空間中距離相近。</li>
+      <li><strong>Context Window = AI 的工作記憶：</strong>Token 數超過上限，AI 就開始「忘記」前面的對話。這就是為什麼長文輸入需要分段處理。</li>
+    </ul>
+
+    <div class="info-box amber">
+      <strong>為什麼計費用 Token？</strong>因為 Token 才是 AI 實際運算的單位，不是字數。英文通常 1 個詞 ≈ 1–2 Token；中文約 1–2 字 ≈ 1 Token（視模型而異）。
+    </div>
+
+    <h4 style="font-size:16px;margin:18px 0 10px;font-weight:700;">積木的語意範例</h4>
+    <div class="compare">
+      <div class="card">
+        <div class="card-label" style="background:#64748b;color:#fff">Apple 的向量鄰居</div>
+        <p>水果面：banana、mango<br>科技面：MacBook、iPhone、Cupertino<br>中文面：蘋果</p>
+        <p style="margin-top:8px;color:#64748b">模型依上下文判斷你說的是哪個意思。</p>
+      </div>
+      <div class="card">
+        <div class="card-label" style="background:#64748b;color:#fff">文字接龍範例</div>
+        <p>輸入「兩顆青蘋」→ 模型預測「果」機率最高<br>輸入「天氣」→ 模型內部先想到 weather/forecast，再輸出「天氣預報」</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. LLM -->
+  <div class="article" id="llm">
+    <div class="article-num">主題 03</div>
+    <h3>LLM：大型語言模型的運作原理</h3>
+
+    <p>大型語言模型（LLM，如 GPT-4、Claude）本質上是一個複雜的數學函式，<strong>核心任務是接收未完成的句子，輸出每個 Token 接在後面的機率分布</strong>，藉此預測下一個字。</p>
+
+    <div class="analogy">
+      <div class="analogy-label">工程師隱喻</div>
+      把 LLM 想像成一座<strong>「超大型文字加工廠」</strong>，有數十條流水線（Layers），唯一目標是根據你給的句子玩「文字接龍」——預測下一塊積木。
+    </div>
+
+    <h4 style="font-size:16px;margin:18px 0 10px;font-weight:700;">5 道工序</h4>
+    <div class="flow flow-5">
+      <div class="step"><b>① Tokenize</b><span>句子切成 Token 積木，轉成數字 ID</span></div>
+      <div class="step"><b>② Embed</b><span>每個 ID 查 Embedding Table，轉成高維向量</span></div>
+      <div class="step"><b>③ Layers</b><span>向量進入多層神經網路，注意力機制理解上下文</span></div>
+      <div class="step"><b>④ LM Head</b><span>最終向量跟字典所有 Token 計算相似度打分數</span></div>
+      <div class="step"><b>⑤ Softmax</b><span>分數轉機率，「擲骰子」選出下一個 Token</span></div>
+    </div>
+
+    <h4 style="font-size:16px;margin:18px 0 10px;font-weight:700;">關鍵機制詳解</h4>
+
+    <table>
+      <tr>
+        <th>機制</th>
+        <th>作用</th>
+        <th>範例</th>
+      </tr>
+      <tr>
+        <td><strong>Self-Attention（自注意力）</strong></td>
+        <td>計算每個 Token 與其他 Token 的關聯強度，融合上下文語意</td>
+        <td>「兩顆青蘋果」中，「青」和「兩」都影響「果」的含義</td>
+      </tr>
+      <tr>
+        <td><strong>Feed Forward Network</strong></td>
+        <td>向量經過矩陣乘法與激活函數進一步轉換</td>
+        <td>每一層都讓模型「理解更深」</td>
+      </tr>
+      <tr>
+        <td><strong>Contextualized Embedding</strong></td>
+        <td>同一個字依上下文產生不同向量</td>
+        <td>「Apple（水果）」vs「Apple（公司）」最終向量截然不同</td>
+      </tr>
+      <tr>
+        <td><strong>Temperature（溫度）</strong></td>
+        <td>控制 Softmax 的機率分布集中程度</td>
+        <td>高溫 → 創意模式；低溫 → 保守精準</td>
+      </tr>
+    </table>
+
+    <div class="info-box">
+      <strong>科學家「偷窺」模型的思考過程：</strong>當輸入「天氣」，模型在中間層其實先浮現英文 <em>weather / forecast</em>，直到最後一層才轉換為中文「天氣預報」輸出。翻譯時也是先在內部過英文再輸出目標語言——這就是多語言模型的運作方式。
+    </div>
+  </div>
+
+  <!-- 4. Prompt Engineering -->
+  <div class="article" id="prompt">
+    <div class="article-num">主題 04</div>
+    <h3>Prompt Engineering：工程師的新型態程式語言</h3>
+
+    <div class="compare">
+      <div class="card blue">
+        <div class="card-label">過去</div>
+        <h4>用程式語言下指令</h4>
+        <p>Python / JavaScript 對機器說「做這件事」，邏輯精確、沒有歧義，錯一個字就報錯。</p>
+      </div>
+      <div class="card teal">
+        <div class="card-label">現在</div>
+        <h4>用自然語言下指令</h4>
+        <p>Prompt 是一種「收斂機率分布」的工具。Prompt 越模糊，AI 自由發揮空間越大，越容易「幻覺」；越精確，輸出越可預期。</p>
+      </div>
+    </div>
+
+    <h4 style="font-size:16px;margin:18px 0 10px;font-weight:700;">好 Prompt 的 5 個欄位</h4>
+    <div class="flow flow-5">
+      <div class="step"><b>1. 角色</b><span>你是一個資深前端工程師</span></div>
+      <div class="step"><b>2. 背景</b><span>目前狀況與相關檔案</span></div>
+      <div class="step"><b>3. 限制</b><span>不能改什麼、偏好什麼</span></div>
+      <div class="step"><b>4. 輸出</b><span>要程式、摘要、表格或步驟</span></div>
+      <div class="step"><b>5. 驗收</b><span>如何確認任務完成</span></div>
+    </div>
+
+    <div class="prompt-box">
+      <div class="prompt-label">Prompt 模板</div>
+<pre>你是一個 [角色]。背景是 [目前狀況]。
+請幫我 [目標]，限制是 [限制條件]。
+完成後請 [輸出格式]。驗收方式是 [測試或檢查方式]。</pre>
+    </div>
+
+    <h4 style="font-size:16px;margin:18px 0 10px;font-weight:700;">常見陷阱 vs 正確做法</h4>
+    <div class="compare">
+      <div class="card red">
+        <div class="card-label">避免</div>
+        <ul class="bullet-list" style="margin:0">
+          <li>「幫我做一個 App」（過於模糊）</li>
+          <li>沒說明限制條件和禁止事項</li>
+          <li>沒要求驗收步驟</li>
+          <li>把 API Key 或密碼直接寫進 Prompt</li>
+        </ul>
+      </div>
+      <div class="card teal">
+        <div class="card-label">改成</div>
+        <ul class="bullet-list" style="margin:0">
+          <li>明確說明角色、背景、目標、格式</li>
+          <li>列出不能碰的檔案或函式</li>
+          <li>要求提供測試指令與手動驗收步驟</li>
+          <li>用佔位符（如 <code>$API_KEY</code>）代替機密</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- 5. Agent -->
+  <div class="article" id="agent">
+    <div class="article-num">主題 05</div>
+    <h3>AI Agent：讓 AI 從「回答者」變成「執行者」</h3>
+
+    <p>傳統 LLM 的限制：能寫出貪吃蛇程式碼，但<strong>無法主動把程式碼存成檔案</strong>，還是需要你手動複製貼上。</p>
+
+    <div class="info-box">
+      <strong>Agent 的定義：</strong>把「大語言模型（大腦）」接上「工具（感官與四肢）」，讓它能自主感知並改變外部環境的智能程式，就是 <strong>AI Agent</strong>。工具包括：讀寫檔案、執行終端機指令、呼叫 API、瀏覽網頁等。
+    </div>
+
+    <h4 style="font-size:16px;margin:18px 0 10px;font-weight:700;">兩大核心運作模式</h4>
+
+    <div class="compare">
+      <div class="card blue">
+        <div class="card-label">ReAct 模式（最廣泛）</div>
+        <h4>思考 → 行動 → 觀察 → 循環</h4>
+        <ol style="padding-left:18px;font-size:14px;line-height:1.8;margin-top:8px">
+          <li><strong>思考（Thought）：</strong>LLM 分析任務，決定下一步</li>
+          <li><strong>行動（Action）：</strong>呼叫工具（如寫入檔案）</li>
+          <li><strong>觀察（Observation）：</strong>工具結果回傳給 LLM</li>
+          <li>不斷循環直到任務完成，給出<strong>最終答案</strong></li>
+        </ol>
+      </div>
+      <div class="card amber">
+        <div class="card-label">Plan &amp; Execute 模式</div>
+        <h4>先規劃、再逐步執行</h4>
+        <ul class="bullet-list" style="margin-top:8px">
+          <li><strong>規劃模型</strong>先制定完整步驟清單</li>
+          <li><strong>執行 Agent</strong>逐步完成每個步驟</li>
+          <li>每完成一步，<strong>動態修改</strong>後續計畫</li>
+          <li>適合大型、複雜任務的拆解</li>
+        </ul>
+      </div>
+    </div>
+
+    <h4 style="font-size:16px;margin:18px 0 10px;font-weight:700;">底層運作原理：System Prompt 的魔法</h4>
+    <p>大模型之所以知道「先思考再行動」，是靠<strong>系統提示詞（System Prompt）</strong>規範的。開發者會寫一段劇本給模型，規定它必須用特定標籤（如 <code>&lt;thought&gt;</code> <code>&lt;action&gt;</code>）來輸出，主程式解析這些標籤後，代替模型執行真正的工具指令。</p>
+
+    <div class="prompt-box">
+      <div class="prompt-label">使用者怎麼用 Agent</div>
+<pre>「寫一個貪吃蛇遊戲，使用 HTML、CSS 和 JS，
+程式碼分別放在不同的檔案中。」</pre>
+      <p style="font-size:13.5px;color:#64748b;margin-top:8px">Agent 會自行思考、建立檔案、確認成功、再建下一個，全程不需插手。</p>
+    </div>
+  </div>
+
+  <!-- 6. MCP -->
+  <div class="article" id="mcp">
+    <div class="article-num">主題 06</div>
+    <h3>MCP：AI 工具的「Type-C 通用接孔」</h3>
+
+    <div class="compare">
+      <div class="card red">
+        <div class="card-label">過去的痛點</div>
+        <h4>工具規格不統一</h4>
+        <p>每個 AI 平台（OpenAI、Anthropic、Google）接上工具的方式都不同。開發者做好一個好用的工具，必須為每個平台各寫一套串接程式碼，極度低效。</p>
+      </div>
+      <div class="card teal">
+        <div class="card-label">MCP 的解法</div>
+        <h4>Model Context Protocol</h4>
+        <p>統一工具介接標準。就像手機充電統一使用 Type-C：工具只需按 MCP 規範寫一次，所有支援 MCP 的 Agent 平台都能「隨插即用」。</p>
+      </div>
+    </div>
+
+    <h4 style="font-size:16px;margin:18px 0 10px;font-weight:700;">完整的 AI 數位員工架構</h4>
+
+    <div class="flow flow-4">
+      <div class="step"><b>LLM（大腦）</b><span>理解任務、思考步驟、決定行動</span></div>
+      <div class="step"><b>Tool 外部工具（四肢）</b><span>查天氣、讀寫檔案、呼叫 API</span></div>
+      <div class="step"><b>MCP（萬用卡榫）</b><span>標準化通訊協議，讓大腦無縫插上各種工具</span></div>
+      <div class="step"><b>AI Agent（數位員工）</b><span>自主規劃、執行、觀察，直到任務完成</span></div>
+    </div>
+
+    <div class="info-box">
+      <strong>對工程師的實際意義：</strong>如果你要開發工具供 AI 使用，遵守 MCP 規範，你的工具就能同時在 Claude、ChatGPT、Gemini 等所有支援 MCP 的平台上運作，不需要重複開發。
+    </div>
+  </div>
+
+  <!-- 7. Agent Skill -->
+  <div class="article" id="agent-skill">
+    <div class="article-num">主題 07</div>
+    <h3>Agent Skill：給 Agent 的專屬操作說明書</h3>
+
+    <p>Agent 有了工具能力（MCP），但不知道你的<strong>私人習慣與格式要求</strong>。每次提問都要輸入一大串重複的要求，非常低效。</p>
+
+    <div class="analogy">
+      <div class="analogy-label">比喻</div>
+      <strong>Agent Skill</strong> 就像給新員工的「SOP 手冊」。你把步驟、判斷規則、輸出格式都寫好，員工（Agent）拿到手冊後，以後執行同類任務就會嚴格照手冊走，不需要再解釋。
+    </div>
+
+    <h4 style="font-size:16px;margin:18px 0 10px;font-weight:700;">一份完整 Agent Skill 的兩大結構</h4>
+
+    <div class="compare">
+      <div class="card blue">
+        <div class="card-label">元數據層（Metadata）</div>
+        <h4>說明書的封面</h4>
+        <ul class="bullet-list" style="margin-top:8px">
+          <li><strong>Name：</strong>技能名稱（如 <code>go out checklist</code>）</li>
+          <li><strong>Description：</strong>功能描述，讓系統判斷何時載入</li>
+        </ul>
+        <p style="margin-top:10px;font-size:13px;color:#64748b">系統啟動只讀 Metadata，用到才載入完整指令，節省 Token。</p>
+      </div>
+      <div class="card teal">
+        <div class="card-label">指令層（Instructions）</div>
+        <h4>核心內容區</h4>
+        <ul class="bullet-list" style="margin-top:8px">
+          <li><strong>Goals：</strong>最終目的</li>
+          <li><strong>Steps：</strong>先呼叫哪個工具、再做什麼</li>
+          <li><strong>Rules：</strong>判斷邏輯（如「下雨才提醒帶傘」）</li>
+          <li><strong>Output Format：</strong>嚴格規定輸出排版</li>
+          <li><strong>Examples：</strong>標準對話範本供 AI 模仿</li>
+        </ul>
+      </div>
+    </div>
+
+    <h4 style="font-size:16px;margin:18px 0 10px;font-weight:700;">存放規則（以 Claude Code 為例）</h4>
+    <ul class="bullet-list">
+      <li>資料夾名稱必須與 Skill 名稱<strong>完全相同</strong></li>
+      <li>檔案必須命名為 <code>Skill.md</code>（<strong>首字母 S 必須大寫</strong>）</li>
+      <li>放到系統指定目錄，Agent 啟動時自動偵測</li>
+    </ul>
+
+    <h4 style="font-size:16px;margin:18px 0 10px;font-weight:700;">MCP vs Agent Skill 的使用時機</h4>
+    <table>
+      <tr>
+        <th></th>
+        <th>MCP</th>
+        <th>Agent Skill</th>
+      </tr>
+      <tr>
+        <td><strong>目的</strong></td>
+        <td>擴充 Agent 的「能力」（提供工具）</td>
+        <td>定義 Agent 的「行為準則」（提供說明書）</td>
+      </tr>
+      <tr>
+        <td><strong>類比</strong></td>
+        <td>給員工裝上電話、電腦、車子</td>
+        <td>給員工一本 SOP 手冊</td>
+      </tr>
+      <tr>
+        <td><strong>使用時機</strong></td>
+        <td>需要 Agent 感知或改變外部世界時</td>
+        <td>需要 Agent 執行重複性、有固定格式要求的任務時</td>
+      </tr>
+    </table>
+  </div>
+
+  <!-- 8. Tools -->
+  <div class="article" id="tools">
+    <div class="article-num">主題 08</div>
+    <h3>Claude Code &amp; Codex：兩大 AI 開發工具</h3>
+
+    <div class="compare">
+      <div class="card teal">
+        <div class="card-label">Claude Code</div>
+        <h4>本機終端機 AI 協作者</h4>
+        <ul class="bullet-list" style="margin-top:8px">
+          <li><strong>Read：</strong>瀏覽資料夾、閱讀檔案、理解程式結構</li>
+          <li><strong>Change：</strong>編輯程式碼、文件、設定檔，沿用現有風格</li>
+          <li><strong>Verify：</strong>執行指令、跑測試、看錯誤訊息、回報結果</li>
+        </ul>
+        <p style="margin-top:10px;font-size:13.5px">終端機輸入 <code>claude</code> 即可啟動。把它當成會問問題、會動手的 Junior Pair。</p>
+      </div>
+      <div class="card blue">
+        <div class="card-label">Codex</div>
+        <h4>OpenAI 雲端 AI 工程師</h4>
+        <ul class="bullet-list" style="margin-top:8px">
+          <li>雲端沙箱環境，任務可平行執行</li>
+          <li>支援 GPT 系列模型</li>
+          <li>適合需要隔離環境或大量平行任務的場景</li>
+        </ul>
+        <p style="margin-top:10px;font-size:13.5px">兩者可互補使用，選擇適合工作情境的工具。</p>
+      </div>
+    </div>
+
+    <div class="info-box blue">
+      <strong>共同特點：</strong>兩者都能讀懂整個專案架構、修改程式碼、執行指令，並支援自然語言（Prompt）操作。差異主要在於本機 vs 雲端、即時互動 vs 平行執行。
+    </div>
+  </div>
+
+  <!-- ═══════════ AFTERNOON ═══════════ -->
+  <div class="section-header afternoon" id="afternoon">
+    <span class="badge">下午</span>
+    <h2>生成式 AI 實戰演練</h2>
+    <span class="time">13:30 – 16:30</span>
+  </div>
+
+  <!-- Practice overview -->
+  <div class="article">
+    <div class="article-num">下午概覽</div>
+    <h3>三個實作任務</h3>
+    <p>以工程師日常開發為主題，每個任務都有獨立練習環境，請點連結另開新視窗操作。</p>
+
+    <div class="flow flow-3" style="margin-top:16px">
+      <div class="step"><b>任務 A — Debug</b><span>了解陌生專案架構，找出技術債與問題點，整理報告</span></div>
+      <div class="step"><b>任務 B — UI Design</b><span>用結構化 Prompt 引導 AI 生成卡路里紀錄 Dashboard</span></div>
+      <div class="step"><b>任務 C — API Test</b><span>實作調用營養成分 API 的前端應用</span></div>
+    </div>
+  </div>
+
+  <!-- Debug -->
+  <div class="article" id="practice-debug">
+    <div class="article-num">任務 A</div>
+    <h3>用 AI 快速了解陌生專案 + 找出技術債</h3>
+
+    <div class="practice-card">
+      <div class="practice-header">
+        <h4>Debug 練習環境</h4>
+        <a href="debug/index.html" target="_blank" rel="noopener">開啟練習 ↗</a>
+      </div>
+      <div class="practice-body">
+        <strong>目標：</strong>在不熟悉新專案的狀態下，利用 AI 快速釐清程式脈絡，找出問題點（過期寫法、命名不一致），並整理成改進建議報告。<br>
+        <strong>建議工具：</strong>Claude Chat / Claude Code / Codex &nbsp;|&nbsp; <strong>預計時間：</strong>30 分鐘
+      </div>
+    </div>
+
+    <h4 style="font-size:16px;margin:18px 0 10px;font-weight:700;">Step 1：了解陌生專案架構</h4>
+    <div class="prompt-box">
+      <div class="prompt-label">Prompt 範例</div>
+<pre>請先閱讀這個專案，不要修改任何檔案。
+
+請回覆：
+1. 專案用途是什麼？
+2. 主要資料夾與檔案結構
+3. 程式入口點在哪？
+4. 本機如何啟動？
+5. 你建議我先看哪 3 個檔案？</pre>
+    </div>
+
+    <h4 style="font-size:16px;margin:18px 0 10px;font-weight:700;">Step 2：找出程式碼問題點</h4>
+    <div class="compare">
+      <div class="card">
+        <div class="card-label" style="background:#64748b;color:#fff">要找的問題類型</div>
+        <ul class="bullet-list" style="margin-top:8px">
+          <li><strong>技術債：</strong>過期寫法、冗餘程式碼、函式過長</li>
+          <li><strong>安全漏洞：</strong>未驗證輸入、硬編碼密碼、SQL Injection</li>
+          <li><strong>命名不一致：</strong>camelCase / snake_case 混用，語意不明</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="prompt-label">Prompt 範例</div>
+        <pre style="font-size:12.5px;margin:0">請分析這個專案，找出：
+- 技術債或過期寫法
+- 潛在安全風險
+- 命名不一致問題
+
+以條列格式整理，
+並標明位於哪個檔案。</pre>
+      </div>
+    </div>
+
+    <h4 style="font-size:16px;margin:18px 0 10px;font-weight:700;">Step 3–4：整理報告 &amp; 請 AI 改善程式碼</h4>
+    <div class="flow flow-4">
+      <div class="step"><b>Step 3</b><span>列出所有問題，按嚴重程度排序</span></div>
+      <div class="step"><b>Step 4</b><span>選擇優先問題，要求 AI 提供改善建議</span></div>
+      <div class="step"><b>Step 5</b><span>請 AI 提供修改後程式碼並說明理由</span></div>
+      <div class="step"><b>Step 6</b><span>審查 Diff，確認修改範圍符合預期再接受</span></div>
+    </div>
+    <div class="info-box red" style="margin-top:16px">
+      <strong>記住：</strong>AI 提供的程式碼需要你來審查。看 Diff、問理由、驗收測試是工程師的責任，不能全盤接受。
+    </div>
+  </div>
+
+  <!-- UI Design -->
+  <div class="article" id="practice-ui">
+    <div class="article-num">任務 B</div>
+    <h3>用 AI 生成「卡路里紀錄 Dashboard」</h3>
+
+    <div class="practice-card">
+      <div class="practice-header">
+        <h4>UI Design 練習環境</h4>
+        <a href="ui_design/index.html" target="_blank" rel="noopener">開啟練習 ↗</a>
+      </div>
+      <div class="practice-body">
+        <strong>目標：</strong>使用結構化 Prompt，引導 AI 用單一 HTML 檔案（內嵌 Tailwind CDN + 原生 JS）生成具備動態互動功能的前端 Dashboard。<br>
+        <strong>建議工具：</strong>Claude Chat / ChatGPT &nbsp;|&nbsp; <strong>預計時間：</strong>45–60 分鐘
+      </div>
+    </div>
+
+    <h4 style="font-size:16px;margin:18px 0 10px;font-weight:700;">UI 三大區塊</h4>
+    <div class="flow flow-3">
+      <div class="step"><b>頂部狀態欄</b><span>今日目標卡路里、已攝取、剩餘，以進度條顯示</span></div>
+      <div class="step"><b>搜尋區</b><span>食物搜尋輸入框、熱門標籤、搜尋結果卡片清單</span></div>
+      <div class="step"><b>日記清單</b><span>今日已加入食物清單，支援刪除與自動重新計算</span></div>
+    </div>
+
+    <h4 style="font-size:16px;margin:18px 0 10px;font-weight:700;">結構化 Prompt 範例（生成 UI 佈局）</h4>
+    <div class="prompt-box">
+      <div class="prompt-label">Prompt 範例</div>
+<pre>角色：你是一個資深的前端工程師與 UI 設計師。
+任務：請使用單一 HTML 檔案（內嵌 Tailwind CSS CDN 與原生 JavaScript）
+建立一個「美食搜尋與卡路里紀錄」的 Dashboard 介面。
+
+版面佈局要求（RWD 行動優先）：
+1. 頂部大盤：呈現今日卡路里儀表板，包含「目標 2000 kcal」、
+   「已攝取 0 kcal」、「剩餘 2000 kcal」三個數值區塊，
+   並包含一個橫向的視覺進度條。
+2. 下方雙欄配置（桌面版 md:grid-cols-3）：
+   - 左側欄（佔 2 欄）：美食搜尋區
+   - 右側欄（佔 1 欄）：今日飲食日記清單
+
+視覺風格：背景 slate-50，主按鈕與進度條使用 emerald-500 綠色系。
+
+輸出限制：請先提供完整的 HTML 與 CSS 佈局結構，
+JavaScript 邏輯先留白，我們稍後處理。</pre>
+    </div>
+
+    <h4 style="font-size:16px;margin:18px 0 10px;font-weight:700;">三個常見陷阱（工程師必讀）</h4>
+    <ul class="bullet-list">
+      <li><strong>狀態管理混亂：</strong>AI 常在 click handler 裡同時修改 DOM 和計算數值，高度耦合難維護。要求 AI 採用「資料驅動（Data-Driven）」模式，所有操作只修改 <code>state</code>，由獨立 <code>render()</code> 函式統一刷新 UI。</li>
+      <li><strong>Tailwind 動態類名失效：</strong><code>class="bg-${color}-500"</code> 這種字串拼接在 Tailwind CDN 中完全無效。動態樣式要直接操作 <code>element.style.width</code> 或用完整類名切換（<code>bg-red-500</code>、<code>bg-emerald-500</code>）。</li>
+      <li><strong>進度條邊界條件（Edge Cases）：</strong>吃超過目標時，百分比會超過 100%，進度條爆框。要在邏輯層加上 <code>Math.min(percent, 100)</code>，超標時進度條自動變紅色警示。</li>
+    </ul>
+  </div>
+
+  <!-- API Test -->
+  <div class="article" id="practice-api">
+    <div class="article-num">任務 C</div>
+    <h3>實作營養成分 API 前端應用</h3>
+
+    <div class="practice-card">
+      <div class="practice-header">
+        <h4>API Test 練習環境</h4>
+        <a href="api_test/index.html" target="_blank" rel="noopener">開啟練習 ↗</a>
+      </div>
+      <div class="practice-body">
+        <strong>目標：</strong>讓使用者輸入食物名稱，透過 AI 協助調用真實的營養成分 API，實作一個可運作的前端查詢應用。<br>
+        <strong>重點：</strong>學習如何用 AI 處理 API 串接、錯誤處理、非同步邏輯，以及如何驗收 AI 產出的程式碼。<br>
+        <strong>預計時間：</strong>30 分鐘
+      </div>
+    </div>
+  </div>
+
+  <!-- Best Practices -->
+  <div class="article" id="best-practices">
+    <div class="article-num">協作心法</div>
+    <h3>跟 AI 工具協作的基本節奏</h3>
+
+    <div class="flow flow-5">
+      <div class="step"><b>Explore</b><span>先讀懂專案，不急著改</span></div>
+      <div class="step"><b>Plan</b><span>確認修改範圍與限制</span></div>
+      <div class="step"><b>Implement</b><span>小步修改，保持可回滾</span></div>
+      <div class="step"><b>Verify</b><span>跑測試或手動驗收</span></div>
+      <div class="step"><b>Summarize</b><span>整理成果與潛在風險</span></div>
+    </div>
+
+    <div class="info-box" style="margin-top:20px">
+      <strong>推薦工作流：</strong>「先分析，不修改」→「提出方案」→「最小範圍實作」→「跑測試」→「總結 diff」
+    </div>
+
+    <div class="compare" style="margin-top:20px">
+      <div class="card red">
+        <div class="card-label">常見錯誤</div>
+        <ul class="bullet-list" style="margin-top:8px">
+          <li>一次丟太大的任務，超出 AI 能掌控的範圍</li>
+          <li>沒有說清楚限制條件（不能動哪些檔案）</li>
+          <li>沒有要求驗證步驟，直接上線</li>
+          <li>不看 Diff 就直接接受所有修改</li>
+          <li>把 secret / API key 寫進 Prompt</li>
+        </ul>
+      </div>
+      <div class="card teal">
+        <div class="card-label">正確做法</div>
+        <ul class="bullet-list" style="margin-top:8px">
+          <li>拆成「探索 → 修改 → 驗證」三個步驟</li>
+          <li>明確列出不能碰的範圍與偏好風格</li>
+          <li>要求測試指令與手動驗收步驟</li>
+          <li>看 Diff，請 AI 解釋每個修改的理由</li>
+          <li>用環境變數或佔位符代替機密資訊</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Prompt Template -->
+  <div class="article" id="prompt-template">
+    <div class="article-num">帶回家用</div>
+    <h3>課後可直接複製使用的 Prompt 模板</h3>
+
+    <div class="prompt-box">
+      <div class="prompt-label">通用 AI 開發任務 Prompt</div>
+<pre>請先閱讀目前專案，不要修改檔案。
+請說明專案架構、入口點、啟動方式，
+以及你建議先看的 3 個檔案。
+
+接著請幫我完成：[具體任務]
+
+限制：
+- [限制 1：例如不要改資料庫 schema]
+- [限制 2：例如優先沿用現有 component 風格]
+
+完成後請：
+1. 說明改了哪些檔案，以及修改理由
+2. 跑可用的測試（沒有就說明原因）
+3. 提供 3 個手動驗收步驟
+4. 列出你認為還有風險的地方</pre>
+    </div>
+
+    <div class="prompt-box" style="margin-top:12px">
+      <div class="prompt-label">找問題點 Prompt</div>
+<pre>請分析這個專案，找出以下問題：
+- 技術債或過期寫法（標明檔案與行號）
+- 潛在安全風險（SQL Injection、XSS、硬編碼密碼等）
+- 命名不一致問題（camelCase / snake_case 混用等）
+- 任何你認為應該重構的部分
+
+請以條列格式整理，並按嚴重程度排序（高 / 中 / 低）。</pre>
+    </div>
+
+    <div class="prompt-box" style="margin-top:12px">
+      <div class="prompt-label">UI 生成 Prompt 骨架</div>
+<pre>角色：你是一個資深前端工程師與 UI 設計師。
+任務：使用單一 HTML 檔案（內嵌 Tailwind CDN + 原生 JS），
+      建立一個 [頁面名稱] 介面。
+
+版面要求：
+- [區塊 1 描述]
+- [區塊 2 描述]
+
+視覺風格：[顏色風格描述]
+
+限制：
+- 禁止使用字串拼接 Tailwind 類名，動態樣式請用 element.style
+- JavaScript 部分採用資料驅動，統一由 render() 函式更新 UI
+
+輸出：先提供完整 HTML/CSS 佈局，JS 留白。</pre>
+    </div>
+
+    <hr>
+
+    <div class="info-box" style="margin-top:4px">
+      <strong>最重要的一句話：</strong>AI 是你的 Junior Pair，不是你的替代品。清楚描述目標、給出限制、要求驗證、審查 Diff——這四步是你身為工程師永遠要掌握的節奏。
+    </div>
+  </div>
+
+  <div class="page-footer">
+    生成式 AI 基礎介紹 · AI 實務課程講義 · 版權所有
+  </div>
+
+</div>
+</body>
+</html>

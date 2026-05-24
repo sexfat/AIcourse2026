@@ -2,7 +2,7 @@
 <html lang="zh-Hant"><head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Codex 基礎教學：初階工程師的一小時入門</title>
+  <title>AI 實務課程：生成式 AI 基礎介紹</title>
   <style>
     :root {
       --bg: #101418;
@@ -20,9 +20,7 @@
       font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif;
     }
 
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
 
     body {
       margin: 0;
@@ -51,7 +49,7 @@
       border: 1px solid rgba(255, 255, 255, 0.08);
       box-shadow: var(--shadow);
       border-radius: 12px;
-      padding: 58px 68px;
+      padding: 52px 64px;
       display: none;
       position: relative;
       overflow: hidden;
@@ -70,12 +68,32 @@
       background: linear-gradient(90deg, var(--accent), var(--accent-2), var(--accent-3));
     }
 
+    /* Section divider slides */
+    .slide.section-slide {
+      background: linear-gradient(135deg, rgba(70, 194, 168, 0.18), rgba(122, 168, 255, 0.10)), rgba(23, 29, 35, 0.97);
+      justify-content: center;
+    }
+
     .eyebrow {
+      color: var(--accent);
+      font-size: 17px;
+      font-weight: 700;
+      margin-bottom: 14px;
+      letter-spacing: 0.02em;
+    }
+
+    .section-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      background: rgba(70, 194, 168, 0.15);
+      border: 1px solid rgba(70, 194, 168, 0.35);
+      border-radius: 999px;
+      padding: 8px 20px;
       color: var(--accent);
       font-size: 18px;
       font-weight: 700;
-      margin-bottom: 16px;
-      letter-spacing: 0;
+      margin-bottom: 28px;
     }
 
     h1, h2 {
@@ -85,64 +103,59 @@
     }
 
     h1 {
-      font-size: clamp(48px, 7vw, 92px);
-      max-width: 900px;
+      font-size: clamp(46px, 6.5vw, 88px);
+      max-width: 960px;
     }
 
     h2 {
-      font-size: clamp(38px, 4.5vw, 62px);
+      font-size: clamp(34px, 4vw, 58px);
       max-width: 980px;
     }
 
     h3 {
-      font-size: 26px;
-      margin: 0 0 14px;
+      font-size: 24px;
+      margin: 0 0 12px;
       letter-spacing: 0;
     }
 
     p {
-      font-size: 24px;
-      line-height: 1.5;
+      font-size: 22px;
+      line-height: 1.52;
       color: var(--muted);
-      margin: 20px 0 0;
+      margin: 18px 0 0;
       max-width: 980px;
     }
 
     ul {
-      margin: 30px 0 0;
+      margin: 26px 0 0;
       padding: 0;
       list-style: none;
       display: grid;
-      gap: 16px;
+      gap: 14px;
     }
 
     li {
-      font-size: 25px;
+      font-size: 23px;
       line-height: 1.42;
       color: var(--text);
       display: grid;
       grid-template-columns: 18px 1fr;
-      gap: 14px;
+      gap: 12px;
       align-items: start;
     }
 
-    li > span {
-      min-width: 0;
-    }
+    li > span { min-width: 0; }
 
     li::before {
       content: "";
-      width: 10px;
-      height: 10px;
-      margin-top: 13px;
+      width: 9px;
+      height: 9px;
+      margin-top: 11px;
       background: var(--accent);
       border-radius: 50%;
     }
 
-    strong {
-      color: var(--text);
-      font-weight: 800;
-    }
+    strong { color: var(--text); font-weight: 800; }
 
     code {
       font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
@@ -155,13 +168,13 @@
     }
 
     pre {
-      margin: 24px 0 0;
-      padding: 22px 24px;
+      margin: 20px 0 0;
+      padding: 20px 22px;
       background: #0b0f13;
       border: 1px solid var(--line);
       border-radius: var(--radius);
       color: #e9f1f8;
-      font-size: 21px;
+      font-size: 19px;
       line-height: 1.5;
       white-space: pre-wrap;
       overflow: hidden;
@@ -169,46 +182,39 @@
 
     .title-meta {
       display: flex;
-      gap: 14px;
+      gap: 12px;
       margin-top: auto;
       color: var(--muted);
-      font-size: 20px;
+      font-size: 19px;
       flex-wrap: wrap;
     }
 
     .pill {
       border: 1px solid var(--line);
       border-radius: 999px;
-      padding: 8px 14px;
+      padding: 7px 14px;
       background: rgba(255, 255, 255, 0.04);
     }
 
-    .grid-2,
-    .grid-3 {
+    .grid-2, .grid-3 {
       display: grid;
-      gap: 18px;
-      margin-top: 30px;
+      gap: 16px;
+      margin-top: 26px;
     }
 
-    .grid-2 {
-      grid-template-columns: 1fr 1fr;
-    }
-
-    .grid-3 {
-      grid-template-columns: repeat(3, 1fr);
-    }
+    .grid-2 { grid-template-columns: 1fr 1fr; }
+    .grid-3 { grid-template-columns: repeat(3, 1fr); }
 
     .box {
       background: var(--panel-2);
       border: 1px solid var(--line);
       border-radius: var(--radius);
-      padding: 22px;
-      min-height: 150px;
+      padding: 20px;
     }
 
     .box p {
-      font-size: 20px;
-      margin-top: 10px;
+      font-size: 19px;
+      margin-top: 8px;
       line-height: 1.42;
     }
 
@@ -218,82 +224,70 @@
       color: #0b1411;
       background: var(--accent);
       border-radius: 6px;
-      padding: 5px 9px;
-      font-size: 15px;
+      padding: 4px 8px;
+      font-size: 14px;
       font-weight: 800;
-      margin-bottom: 14px;
+      margin-bottom: 12px;
     }
 
-    .tag.alt {
-      background: var(--accent-2);
-      color: #1d1406;
-    }
-
-    .tag.blue {
-      background: var(--accent-3);
-      color: #071124;
-    }
+    .tag.alt  { background: var(--accent-2); color: #1d1406; }
+    .tag.blue { background: var(--accent-3); color: #071124; }
+    .tag.red  { background: var(--danger);   color: #1b0505; }
 
     .compare {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 18px;
-      margin-top: 30px;
+      gap: 16px;
+      margin-top: 26px;
     }
 
-    .bad {
-      border-color: rgba(255, 122, 122, 0.45);
-    }
-
-    .bad .tag {
-      background: var(--danger);
-      color: #1b0505;
-    }
+    .bad { border-color: rgba(255, 122, 122, 0.45); }
 
     .flow {
       display: grid;
-      grid-template-columns: repeat(5, 1fr);
-      gap: 12px;
-      margin-top: 34px;
+      gap: 10px;
+      margin-top: 28px;
       align-items: stretch;
     }
+
+    .flow-5 { grid-template-columns: repeat(5, 1fr); }
+    .flow-4 { grid-template-columns: repeat(4, 1fr); }
 
     .step {
       border: 1px solid var(--line);
       border-radius: var(--radius);
-      padding: 18px 16px;
+      padding: 16px 14px;
       background: rgba(255, 255, 255, 0.04);
-      min-height: 125px;
     }
 
     .step b {
       display: block;
       color: var(--accent-2);
-      font-size: 18px;
-      margin-bottom: 10px;
+      font-size: 16px;
+      margin-bottom: 8px;
     }
 
     .step span {
-      font-size: 20px;
+      font-size: 18px;
       line-height: 1.35;
       color: var(--text);
     }
 
     .footer {
       position: absolute;
-      left: 68px;
-      right: 68px;
-      bottom: 26px;
+      left: 64px;
+      right: 64px;
+      bottom: 22px;
       display: flex;
       align-items: center;
       justify-content: space-between;
       color: var(--muted);
-      font-size: 15px;
+      font-size: 14px;
     }
 
     .progress {
       height: 4px;
-      width: 220px;
+      width: 200px;
       background: rgba(255, 255, 255, 0.12);
       border-radius: 999px;
       overflow: hidden;
@@ -304,261 +298,365 @@
       height: 100%;
       width: 0;
       background: var(--accent);
+      transition: width 0.25s ease;
     }
 
     .notes {
       margin-top: auto;
-      padding-top: 18px;
+      padding-top: 16px;
       color: var(--muted);
-      font-size: 18px;
+      font-size: 17px;
     }
 
-    .small li {
-      font-size: 21px;
-    }
+    .small li { font-size: 19px; }
+    .small li::before { margin-top: 9px; }
 
-    .small li::before {
-      margin-top: 10px;
-    }
-
-    .tight pre {
-      font-size: 19px;
-      padding: 18px 20px;
-      margin-top: 18px;
-    }
-
-    .compact-list {
-      gap: 12px;
-    }
-
-    .compact-list li {
-      font-size: 23px;
-    }
-
-    .command-strip {
-      display: flex;
-      flex-wrap: wrap;
+    /* Practice link button */
+    .practice-btn {
+      display: inline-flex;
+      align-items: center;
       gap: 10px;
-      margin: 14px 0 4px 32px;
+      margin-top: 20px;
+      padding: 16px 28px;
+      background: rgba(70, 194, 168, 0.15);
+      border: 2px solid rgba(70, 194, 168, 0.5);
+      border-radius: 10px;
+      color: var(--accent);
+      text-decoration: none;
+      font-size: 22px;
+      font-weight: 700;
+      transition: background 0.2s, border-color 0.2s;
     }
 
-    .command-strip code {
-      white-space: nowrap;
-      font-size: 20px;
-      padding: 8px 10px;
+    .practice-btn:hover {
+      background: rgba(70, 194, 168, 0.28);
+      border-color: var(--accent);
     }
 
-    .review-list {
-      gap: 15px;
+    .practice-btn.alt {
+      background: rgba(245, 184, 95, 0.12);
+      border-color: rgba(245, 184, 95, 0.45);
+      color: var(--accent-2);
     }
 
-    .command-grid {
+    .practice-btn.alt:hover {
+      background: rgba(245, 184, 95, 0.25);
+      border-color: var(--accent-2);
+    }
+
+    .practice-btn.blue {
+      background: rgba(122, 168, 255, 0.12);
+      border-color: rgba(122, 168, 255, 0.45);
+      color: var(--accent-3);
+    }
+
+    .practice-btn.blue:hover {
+      background: rgba(122, 168, 255, 0.25);
+      border-color: var(--accent-3);
+    }
+
+    .arrow { font-size: 20px; }
+
+    .time-badge {
+      display: inline-flex;
+      align-items: center;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 4px 10px;
+      font-size: 16px;
+      color: var(--muted);
+      margin-left: 14px;
+      font-weight: normal;
+    }
+
+    .agenda-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 14px 18px;
-      margin-top: 28px;
+      gap: 16px;
+      margin-top: 26px;
     }
 
-    .command-row {
-      display: grid;
-      grid-template-columns: 132px 1fr;
-      gap: 14px;
-      align-items: start;
-      background: rgba(255, 255, 255, 0.04);
+    .agenda-box {
+      background: var(--panel-2);
       border: 1px solid var(--line);
       border-radius: var(--radius);
-      padding: 15px 16px;
+      padding: 22px;
     }
 
-    .command-row code {
-      white-space: nowrap;
-      text-align: center;
+    .agenda-box .time {
+      color: var(--accent-2);
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 10px;
+      display: block;
     }
 
-    .command-row span {
-      color: var(--text);
-      font-size: 20px;
-      line-height: 1.35;
+    .agenda-box h3 { font-size: 22px; margin-bottom: 10px; }
+
+    .agenda-box ul { margin-top: 10px; gap: 8px; }
+    .agenda-box li { font-size: 18px; }
+    .agenda-box li::before { margin-top: 8px; width: 7px; height: 7px; }
+
+    .center-practice {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      justify-content: center;
+      flex: 1;
+      gap: 18px;
     }
 
-    .slash-slide .command-grid {
-      grid-template-columns: repeat(4, 1fr);
-      gap: 12px;
-    }
-
-    .slash-slide .command-row {
-      grid-template-columns: 1fr;
-      gap: 9px;
-      min-height: 118px;
-    }
-
-    .slash-slide .command-row code {
-      text-align: left;
-      width: max-content;
-    }
-
-    .slash-slide .command-row span {
+    .practice-meta {
       font-size: 18px;
-    }
-
-    .slash-slide p {
-      font-size: 21px;
-      margin-top: 18px;
+      color: var(--muted);
+      line-height: 1.5;
+      margin-top: 6px;
     }
 
     @media (max-width: 900px) {
-      body {
-        overflow: auto;
-      }
-
-      .deck {
-        min-height: 100vh;
-        height: auto;
-        padding: 12px;
-      }
-
-      .slide {
-        width: calc(100vw - 24px);
-        min-height: calc(100vh - 24px);
-        max-height: none;
-        aspect-ratio: auto;
-        padding: 34px 26px 58px;
-      }
-
-      h1 {
-        font-size: 44px;
-      }
-
-      h2 {
-        font-size: 34px;
-      }
-
-      p, li {
-        font-size: 20px;
-      }
-
-      pre {
-        font-size: 16px;
-      }
-
-      .tight h2 {
-        font-size: 31px;
-      }
-
-      .tight pre {
-        font-size: 15px;
-        padding: 14px 16px;
-        margin-top: 14px;
-      }
-
-      .compact-list {
-        gap: 10px;
-        margin-top: 22px;
-      }
-
-      .compact-list li {
-        font-size: 19px;
-      }
-
-      .command-strip {
-        margin: 10px 0 2px 32px;
-      }
-
-      .command-strip code {
-        font-size: 16px;
-        padding: 6px 8px;
-      }
-
-      .command-grid {
-        grid-template-columns: 1fr;
-        gap: 10px;
-      }
-
-      .command-row {
-        grid-template-columns: 112px 1fr;
-      }
-
-      .command-row span {
-        font-size: 17px;
-      }
-
-      .slash-slide h2 {
-        font-size: 30px;
-      }
-
-      .slash-slide .command-grid {
-        grid-template-columns: 1fr 1fr;
-        gap: 10px;
-        margin-top: 20px;
-      }
-
-      .slash-slide .command-row {
-        grid-template-columns: 1fr;
-        min-height: 88px;
-        padding: 12px;
-        gap: 7px;
-      }
-
-      .slash-slide .command-row code {
-        font-size: 15px;
-        padding: 5px 7px;
-      }
-
-      .slash-slide .command-row span {
-        font-size: 15px;
-        line-height: 1.28;
-      }
-
-      .slash-slide p {
-        font-size: 16px;
-        margin-top: 14px;
-      }
-
-      .grid-2,
-      .grid-3,
-      .compare,
-      .flow {
-        grid-template-columns: 1fr;
-      }
-
-      .footer {
-        left: 26px;
-        right: 26px;
-      }
-
-      .progress {
-        width: 120px;
-      }
+      body { overflow: auto; }
+      .deck { min-height: 100vh; height: auto; padding: 12px; }
+      .slide { width: calc(100vw - 24px); min-height: calc(100vh - 24px); max-height: none; aspect-ratio: auto; padding: 30px 22px 54px; }
+      h1 { font-size: 40px; }
+      h2 { font-size: 30px; }
+      p, li { font-size: 18px; }
+      pre { font-size: 15px; }
+      .grid-2, .grid-3, .compare, .flow-5, .flow-4, .agenda-grid { grid-template-columns: 1fr; }
+      .footer { left: 22px; right: 22px; }
+      .progress { width: 110px; }
     }
   </style>
 </head>
 <body>
   <main class="deck" aria-live="polite">
+
+    <!-- ===== SLIDE 1: Title ===== -->
     <section class="slide active">
-      <div class="eyebrow">1 小時入門課</div>
-      <h1>Codex 基礎教學</h1>
-      <p>給初階工程師的實作導向介紹：理解 Codex、下對指令、完成文件整理與程式碼開發任務。</p>
+      <div class="eyebrow">AI 實務課程 · 6 小時</div>
+      <h1>生成式 AI<br>基礎介紹</h1>
+      <p>從工程師視角理解 AI 的本質、學會提示詞技巧，並實際用 AI 工具提升開發效率。</p>
       <div class="title-meta">
-        <span class="pill">中文教學</span>
-        <span class="pill">保留 English commands</span>
-        <span class="pill">Demo + Practice</span>
+        <span class="pill">對象：軟體工程師</span>
+        <span class="pill">上午 9:00 – 12:00</span>
+        <span class="pill">下午 13:30 – 16:30</span>
       </div>
     </section>
 
+    <!-- ===== SLIDE 2: 課程全覽 ===== -->
     <section class="slide">
-      <div class="eyebrow">Learning Goals</div>
-      <h2>今天結束後，你要能做到三件事</h2>
-      <ul>
-        <li>知道 Codex 和一般聊天 AI 的差異，以及它適合處理哪些工程任務。</li>
-        <li>會寫清楚的指令，讓 Codex 能讀檔、改檔、跑測試、整理結果。</li>
-        <li>能用 Codex 完成一個小型文件整理任務與一個小型程式碼任務。</li>
-      </ul>
-      <div class="notes">建議時間：3 分鐘</div>
+      <div class="eyebrow">Course Overview</div>
+      <h2>今天的 6 小時地圖</h2>
+      <div class="agenda-grid">
+        <div class="agenda-box">
+          <span class="time">上午 9:00 – 12:00</span>
+          <h3>生成式 AI 基礎介紹</h3>
+          <ul>
+            <li><span>傳統程式 vs 生成式 AI</span></li>
+            <li><span>LLM 是什麼？它怎麼運作？</span></li>
+            <li><span>Token 是什麼？</span></li>
+            <li><span>Prompt Engineering</span></li>
+            <li><span>Claude Code 與 Codex 介紹示範</span></li>
+            <li><span>Agent 模式是什麼？</span></li>
+            <li><span>MCP（模型上下文協議）</span></li>
+            <li><span>Agent Skill 是什麼？</span></li>
+          </ul>
+        </div>
+        <div class="agenda-box">
+          <span class="time" style="color:var(--accent-2)">下午 13:30 – 16:30</span>
+          <h3>生成式 AI 實戰演練</h3>
+          <ul>
+            <li><span>用 AI 快速了解陌生專案</span></li>
+            <li><span>用 AI 找出程式碼問題點</span></li>
+            <li><span>整理問題報告 & 改進建議</span></li>
+            <li><span>請 AI 提供改善後的程式碼</span></li>
+            <li><span>三個實作練習環節</span></li>
+          </ul>
+        </div>
+      </div>
     </section>
 
+    <!-- ===== SLIDE 3: Section break - Morning ===== -->
+    <section class="slide section-slide">
+      <div class="section-label">上午課程</div>
+      <h1>生成式 AI<br>基礎介紹</h1>
+      <p>用工程師最熟悉的思維，10 分鐘搞懂生成式 AI 的本質。</p>
+    </section>
+
+    <!-- ===== SLIDE 4: 傳統程式 vs 生成式 AI ===== -->
     <section class="slide">
-      <div class="eyebrow">What Is Codex</div>
-      <h2>Codex 是能操作專案的 AI 工程協作者</h2>
+      <div class="eyebrow">核心觀念</div>
+      <h2>傳統程式 vs 生成式 AI</h2>
+      <div class="compare">
+        <div class="box">
+          <span class="tag blue">傳統程式</span>
+          <h3>規則驅動</h3>
+          <p><strong>輸入資料 + 寫死規則（If/Else）= 輸出結果</strong></p>
+          <p>工程師扮演上帝。所有邏輯、邊界條件全部用程式碼定義好。漏寫一個 if，就會噴 Bug。</p>
+        </div>
+        <div class="box">
+          <span class="tag">生成式 AI</span>
+          <h3>機率驅動</h3>
+          <p><strong>餵入海量資料 + 模型訓練 = 機器自己找出規則</strong></p>
+          <p>工程師給予「提示與上下文」，AI 基於統計規律去「憑空創造」原本不存在的新內容。</p>
+        </div>
+      </div>
+      <div class="notes">建議時間：5 分鐘</div>
+    </section>
+
+    <!-- ===== SLIDE 5: 分類 vs 創造 ===== -->
+    <section class="slide">
+      <div class="eyebrow">傳統 AI vs 生成式 AI</div>
+      <h2>用途根本不同：分類 vs 創造</h2>
+      <div class="compare">
+        <div class="box">
+          <span class="tag blue">傳統 AI</span>
+          <h3>拿來做分類與判斷</h3>
+          <ul class="small">
+            <li><span>判斷這封郵件是不是垃圾信</span></li>
+            <li><span>判斷這張照片是不是貓</span></li>
+            <li><span>預測這筆交易是否詐騙</span></li>
+          </ul>
+        </div>
+        <div class="box">
+          <span class="tag">生成式 AI</span>
+          <h3>拿來創造新東西</h3>
+          <ul class="small">
+            <li><span>幫我寫一封感謝信</span></li>
+            <li><span>畫一隻在太空的貓</span></li>
+            <li><span>把這段 Python 重構成 TypeScript</span></li>
+          </ul>
+        </div>
+      </div>
+      <p>本質：生成式 AI 是「超級文字接龍機」，根據你給的前文，計算下一個字「最有可能是什麼」。</p>
+      <div class="notes">建議時間：5 分鐘</div>
+    </section>
+
+    <!-- ===== SLIDE 6: LLM 是什麼 ===== -->
+    <section class="slide">
+      <div class="eyebrow">LLM</div>
+      <h2>大型語言模型（LLM）是什麼？</h2>
+      <div class="grid-3">
+        <div class="box">
+          <span class="tag">大腦</span>
+          <h3>壓縮的超大資料庫</h3>
+          <p>讀完了整個網際網路，把知識壓縮進數十億個參數（如 GPT-4、Claude）。</p>
+        </div>
+        <div class="box">
+          <span class="tag alt">類比</span>
+          <h3>超級實習生</h3>
+          <p>熟讀了 Stack Overflow、GitHub 所有開源專案、無數技術文件，但沒有獨立思考能力，只是在「模仿」。</p>
+        </div>
+        <div class="box">
+          <span class="tag blue">核心任務</span>
+          <h3>文字接龍</h3>
+          <p>接收未完成的句子，輸出字典裡每個 Token 接在後面的<strong>機率分布</strong>，預測下一個字。</p>
+        </div>
+      </div>
+      <div class="notes">建議時間：5 分鐘</div>
+    </section>
+
+    <!-- ===== SLIDE 7: LLM 怎麼運作 ===== -->
+    <section class="slide">
+      <div class="eyebrow">LLM 內部運作</div>
+      <h2>「文字加工廠」5 道工序</h2>
+      <div class="flow flow-5">
+        <div class="step"><b>① Tokenize</b><span>把句子切成 Token 積木，轉成數字編號</span></div>
+        <div class="step"><b>② Embed</b><span>每個 Token ID 轉成高維度向量，意思相近的距離相近</span></div>
+        <div class="step"><b>③ Layers</b><span>向量進入多層神經網路，注意力機制理解上下文</span></div>
+        <div class="step"><b>④ LM Head</b><span>最終向量跟字典所有 Token 計算相似度，打分數</span></div>
+        <div class="step"><b>⑤ Softmax</b><span>分數轉成機率，「擲骰子」選出下一個 Token</span></div>
+      </div>
+      <p>Temperature 參數就是控制這顆骰子：調高 → 創意模式，調低 → 保守精準。</p>
+      <div class="notes">建議時間：7 分鐘</div>
+    </section>
+
+    <!-- ===== SLIDE 8: Token 是什麼 ===== -->
+    <section class="slide">
+      <div class="eyebrow">Token</div>
+      <h2>Token = 語言模型的「文字積木」</h2>
+      <div class="grid-2">
+        <div>
+          <ul>
+            <li><span>AI 看不懂人類文字，先把句子拆成一塊塊 Token 才能運算</span></li>
+            <li><span>積木的切法和我們直覺<strong>不一樣</strong>：「Apple」、「APPLE」、「 Apple」（前面有空格）是三塊不同 Token</span></li>
+            <li><span>中文有時數個字合成一個 Token，有時一個字被切成多塊</span></li>
+            <li><span>標點符號（！、"）也是獨立的 Token</span></li>
+          </ul>
+        </div>
+        <div class="box">
+          <span class="tag alt">為什麼計費用 Token？</span>
+          <p>因為 Token 是 AI 實際運算的單位，不是字數。每個 Token 有唯一的數字編號，再轉成向量進行矩陣運算。</p>
+          <p style="margin-top:14px"><strong>Context Window</strong> = AI 的「工作記憶」，超過上限就會開始忘記前面的對話。</p>
+        </div>
+      </div>
+      <div class="notes">建議時間：6 分鐘</div>
+    </section>
+
+    <!-- ===== SLIDE 9: Token 語意特性 ===== -->
+    <section class="slide">
+      <div class="eyebrow">Token 的語意特性</div>
+      <h2>積木會互相連結，蘊含語意相似性</h2>
+      <div class="grid-3">
+        <div class="box">
+          <span class="tag">例 1：Apple</span>
+          <p>模型知道「Apple」同時接近「banana（水果）」也接近「MacBook、iPhone（科技公司）」，能依上下文區分。</p>
+        </div>
+        <div class="box">
+          <span class="tag alt">例 2：文字接龍</span>
+          <p>輸入「天氣」，模型先在內部想到英文「weather / forecast」，最後才輸出中文「天氣預報」。</p>
+        </div>
+        <div class="box">
+          <span class="tag blue">例 3：中文姓氏</span>
+          <p>給模型「王」這個 Token，它知道對應英文「King」，也知道和另一個姓氏「黃」意思接近。</p>
+        </div>
+      </div>
+      <p>這就是「Embedding」的魔法：意義相近的字在高維度空間中距離相近。</p>
+      <div class="notes">建議時間：5 分鐘</div>
+    </section>
+
+    <!-- ===== SLIDE 10: Prompt Engineering ===== -->
+    <section class="slide">
+      <div class="eyebrow">Prompt Engineering</div>
+      <h2>Prompt 是工程師的新型態程式語言</h2>
+      <div class="compare">
+        <div class="box">
+          <span class="tag blue">過去</span>
+          <h3>用程式語言下指令</h3>
+          <p>Python / JavaScript 對機器說「做這件事」，邏輯要精確、沒有歧義。</p>
+        </div>
+        <div class="box">
+          <span class="tag">現在</span>
+          <h3>用自然語言下指令</h3>
+          <p>Prompt Engineering 的本質是透過精確的<strong>角色設定、背景脈絡、限制條件</strong>，收斂 AI 的機率分布，讓它輸出我們要的結果。</p>
+        </div>
+      </div>
+      <p>Prompt 越模糊 → AI 自由發揮空間越大 → 越容易「幻覺」。Prompt 越精確 → 輸出越可預期。</p>
+      <div class="notes">建議時間：6 分鐘</div>
+    </section>
+
+    <!-- ===== SLIDE 11: 好 Prompt 的結構 ===== -->
+    <section class="slide">
+      <div class="eyebrow">Prompt Engineering 實戰</div>
+      <h2>好 Prompt 的 5 個欄位</h2>
+      <div class="flow flow-5">
+        <div class="step"><b>1. 角色</b><span>你是一個資深前端工程師</span></div>
+        <div class="step"><b>2. 背景</b><span>目前狀況與相關檔案</span></div>
+        <div class="step"><b>3. 限制</b><span>不能改什麼、偏好什麼</span></div>
+        <div class="step"><b>4. 輸出</b><span>要程式、摘要、表格或步驟</span></div>
+        <div class="step"><b>5. 驗收</b><span>如何確認任務完成</span></div>
+      </div>
+      <pre>模板：
+你是一個 [角色]。背景是 [目前狀況]。
+請幫我 [目標]，限制是 [限制條件]。
+完成後請 [輸出格式]。驗收方式是 [測試或檢查方式]。</pre>
+      <div class="notes">建議時間：8 分鐘</div>
+    </section>
+
+    <!-- ===== SLIDE 12: Claude Code 介紹 ===== -->
+    <section class="slide">
+      <div class="eyebrow">AI 開發工具 ①</div>
+      <h2>Claude Code：能操作專案的 AI 協作者</h2>
       <div class="grid-3">
         <div class="box">
           <span class="tag">Read</span>
@@ -576,325 +674,344 @@
           <p>執行指令、跑測試、看錯誤訊息，回報修改結果。</p>
         </div>
       </div>
-      <div class="notes">建議時間：4 分鐘</div>
+      <p>在終端機輸入 <code>claude</code> 即可啟動。把它當成會問問題、會動手的 Junior Pair。</p>
+      <div class="notes">建議時間：7 分鐘（含示範）</div>
     </section>
 
+    <!-- ===== SLIDE 13: Codex 介紹 ===== -->
     <section class="slide">
-      <div class="eyebrow">Mental Model</div>
-      <h2>把 Codex 當成會問問題、會動手的 Junior Pair</h2>
-      <ul>
-        <li>你提供目標、背景、限制與驗收標準。</li>
-        <li>Codex 負責探索、提出修改、執行命令與回報結果。</li>
-        <li>你仍然要審查重要變更，尤其是刪除資料、改設定、部署與安全相關操作。</li>
-      </ul>
-      <pre>不要只說：「幫我修好」
-改成：「這個 API 在空資料時會 500，請找出原因並修正，最後跑測試確認。」</pre>
-      <div class="notes">建議時間：4 分鐘</div>
-    </section>
-
-    <section class="slide">
-      <div class="eyebrow">Workspace</div>
-      <h2>使用前先理解工作區</h2>
-      <div class="grid-2">
-        <div class="box">
-          <h3>Codex 看得到什麼</h3>
-          <ul class="small">
-            <li>目前專案資料夾中的檔案</li>
-            <li>終端機指令輸出</li>
-            <li>工具回傳的檢查結果</li>
-          </ul>
-        </div>
-        <div class="box">
-          <h3>你要注意什麼</h3>
-          <ul class="small">
-            <li>確認目前資料夾是正確專案</li>
-            <li>重要修改前先有 git 狀態</li>
-            <li>不要把 secret 寫進 prompt 或檔案</li>
-          </ul>
-        </div>
-      </div>
-      <pre>常用起手式：
-「先幫我看這個專案結構，不要修改檔案，整理出入口檔案與主要模組。」</pre>
-      <div class="notes">建議時間：5 分鐘</div>
-    </section>
-
-    <section class="slide">
-      <div class="eyebrow">Command Types</div>
-      <h2>初學者最常用的 6 類指令</h2>
-      <div class="grid-3">
-        <div class="box"><h3>理解</h3><p>Explain / summarize / trace flow</p></div>
-        <div class="box"><h3>修改</h3><p>Implement / update / refactor</p></div>
-        <div class="box"><h3>除錯</h3><p>Debug / fix error / inspect logs</p></div>
-        <div class="box"><h3>測試</h3><p>Run tests / add tests / verify</p></div>
-        <div class="box"><h3>文件</h3><p>README / guide / changelog</p></div>
-        <div class="box"><h3>版本控制</h3><p>Diff / commit message / PR summary</p></div>
-      </div>
-      <div class="notes">建議時間：5 分鐘</div>
-    </section>
-
-    <section class="slide slash-slide">
-      <div class="eyebrow">Slash Commands</div>
-      <h2>像 <code>/model</code> 這類指令，是控制 Codex 工作階段</h2>
-      <div class="command-grid">
-        <div class="command-row"><code>/help</code><span>查看目前版本支援的指令。</span></div>
-        <div class="command-row"><code>/model</code><span>切換模型與推理強度。</span></div>
-        <div class="command-row"><code>/status</code><span>查看模型、權限與用量。</span></div>
-        <div class="command-row"><code>/permissions</code><span>調整 Codex 可以做哪些操作。</span></div>
-        <div class="command-row"><code>/init</code><span>建立 AGENTS.md 專案規則。</span></div>
-        <div class="command-row"><code>/review</code><span>針對目前變更做 code review。</span></div>
-        <div class="command-row"><code>/compact</code><span>對話很長時壓縮上下文。</span></div>
-        <div class="command-row"><code>/new</code><span>開啟新的想法或新任務。</span></div>
-      </div>
-      <p>教學提醒：Slash command 是「控制介面」，自然語言 Prompt 是「交代任務」。</p>
-      <div class="notes">建議時間：5 分鐘</div>
-    </section>
-
-    <section class="slide">
-      <div class="eyebrow">Explain Prompts</div>
-      <h2>理解專案：先讓 Codex 建立地圖</h2>
-      <pre>請先閱讀這個專案，不要修改檔案。
-
-請回覆：
-1. 專案用途
-2. 主要資料夾與檔案
-3. 程式入口點
-4. 本機如何啟動
-5. 你建議我先看哪 3 個檔案</pre>
-      <ul>
-        <li>適合接手新專案、讀別人的程式、快速找方向。</li>
-        <li>先要求「不要修改檔案」，可以把探索和實作分開。</li>
-      </ul>
-      <div class="notes">建議時間：4 分鐘</div>
-    </section>
-
-    <section class="slide">
-      <div class="eyebrow">Edit Prompts</div>
-      <h2>修改功能：給目標，也給限制</h2>
-      <pre>請幫我在會員列表加入搜尋功能。
-
-限制：
-- 不要改資料庫 schema
-- 優先沿用現有 component style
-- 搜尋欄位包含 name 與 email
-
-完成後：
-- 說明改了哪些檔案
-- 跑現有測試或提供無法跑的原因</pre>
-      <ul>
-        <li>好的限制能減少過度改動。</li>
-        <li>要求驗證，讓任務不只停在「看起來有改」。</li>
-      </ul>
-      <div class="notes">建議時間：5 分鐘</div>
-    </section>
-
-    <section class="slide">
-      <div class="eyebrow">Debug Prompts</div>
-      <h2>除錯：提供錯誤、重現步驟、期望行為</h2>
-      <pre>現在執行 `npm test` 會失敗。
-
-請你：
-1. 先跑測試確認錯誤
-2. 找出最可能的原因
-3. 做最小修改修正
-4. 再跑一次測試
-5. 用條列說明 root cause</pre>
+      <div class="eyebrow">AI 開發工具 ②</div>
+      <h2>Codex：OpenAI 的雲端 AI 工程師</h2>
       <div class="compare">
-        <div class="box bad">
-          <span class="tag">不清楚</span>
-          <p>「壞了，幫我看。」</p>
+        <div class="box">
+          <span class="tag">共同點</span>
+          <ul class="small">
+            <li><span>都能讀懂整個專案，理解架構與邏輯</span></li>
+            <li><span>都能修改程式碼、跑指令、回報結果</span></li>
+            <li><span>都支援自然語言指令（Prompt）</span></li>
+          </ul>
         </div>
         <div class="box">
-          <span class="tag">清楚</span>
-          <p>「這個 command 失敗，請重現、定位、最小修正、驗證。」</p>
+          <span class="tag alt">差異</span>
+          <ul class="small">
+            <li><span><strong>Claude Code</strong>：本機終端機，即時互動，支援 Claude 模型</span></li>
+            <li><span><strong>Codex</strong>：雲端沙箱環境，任務可平行執行，支援 GPT 模型</span></li>
+            <li><span>兩者可互補使用，選擇適合工作情境的工具</span></li>
+          </ul>
         </div>
       </div>
-      <div class="notes">建議時間：5 分鐘</div>
+      <div class="notes">建議時間：7 分鐘（含示範）</div>
     </section>
 
-    <section class="slide tight">
-      <div class="eyebrow">Verify Prompts</div>
-      <h2>驗證不是附加工作，是工程工作的一部分</h2>
-      <ul class="compact-list">
-        <li>請 Codex 跑既有測試，例如：</li>
-        <li>沒有測試時，要求它提供手動驗收步驟。</li>
-        <li>前端任務可要求截圖檢查、RWD 檢查、互動流程檢查。</li>
-      </ul>
-      <div class="command-strip" aria-label="常見測試指令">
-        <code>npm test</code>
-        <code>pytest</code>
-        <code>go test ./...</code>
-      </div>
-      <pre>請完成修改後驗證：
-- 能跑自動測試就跑
-- 無法跑請說明原因
-- 補上 3 個我可以手動檢查的步驟</pre>
-      <div class="notes">建議時間：4 分鐘</div>
-    </section>
-
+    <!-- ===== SLIDE 14: Agent 模式 ===== -->
     <section class="slide">
-      <div class="eyebrow">Prompt Formula</div>
-      <h2>好指令的 5 個欄位</h2>
-      <div class="flow">
-        <div class="step"><b>1. 目標</b><span>要完成什麼</span></div>
-        <div class="step"><b>2. 背景</b><span>目前狀況與相關檔案</span></div>
-        <div class="step"><b>3. 限制</b><span>不能改什麼、偏好什麼</span></div>
-        <div class="step"><b>4. 輸出</b><span>要程式、摘要、表格或步驟</span></div>
-        <div class="step"><b>5. 驗收</b><span>如何確認完成</span></div>
+      <div class="eyebrow">Agent Mode</div>
+      <h2>AI Agent：LLM ＋ 工具 ＝ 自主數位員工</h2>
+      <div class="compare">
+        <div class="box">
+          <span class="tag blue">ReAct 模式（最常見）</span>
+          <p style="font-size:18px;margin-top:8px">思考 → 行動 → 觀察 → 再思考，不斷循環直到任務完成</p>
+          <ul class="small" style="margin-top:10px">
+            <li><span>LLM 先<strong>思考</strong>要做什麼</span></li>
+            <li><span>主程式<strong>執行</strong>對應工具（讀寫檔、呼叫 API）</span></li>
+            <li><span>把結果當<strong>觀察</strong>回傳給 LLM，繼續循環</span></li>
+          </ul>
+        </div>
+        <div class="box">
+          <span class="tag alt">Plan &amp; Execute 模式</span>
+          <p style="font-size:18px;margin-top:8px">先列完整計畫，再逐步執行並動態修正</p>
+          <ul class="small" style="margin-top:10px">
+            <li><span>規劃模型先制定步驟清單</span></li>
+            <li><span>執行 Agent 逐步完成每個步驟</span></li>
+            <li><span>根據結果<strong>動態修改</strong>後續計畫</span></li>
+          </ul>
+        </div>
       </div>
-      <pre>模板：
-請幫我 [目標]。
-背景是 [目前狀況]。
-限制是 [限制條件]。
-完成後請 [輸出格式]。
-驗收方式是 [測試或檢查方式]。</pre>
-      <div class="notes">建議時間：5 分鐘</div>
-    </section>
-
-    <section class="slide">
-      <div class="eyebrow">Demo A</div>
-      <h2>現場示範：文件與資料夾整理</h2>
-      <div class="flow">
-        <div class="step"><b>Step 1</b><span>請 Codex 掃描資料夾</span></div>
-        <div class="step"><b>Step 2</b><span>分類檔案與命名問題</span></div>
-        <div class="step"><b>Step 3</b><span>產生整理方案</span></div>
-        <div class="step"><b>Step 4</b><span>建立 README 或索引</span></div>
-        <div class="step"><b>Step 5</b><span>檢查結果</span></div>
-      </div>
-      <pre>示範指令：
-請掃描目前資料夾，不要移動檔案。
-幫我整理出檔案類型、可能用途，以及建議的分類資料夾。
-最後產生一份 README 草稿，說明這個資料夾內容。</pre>
-      <div class="notes">建議時間：7 分鐘</div>
-    </section>
-
-    <section class="slide">
-      <div class="eyebrow">Demo B</div>
-      <h2>現場示範：程式碼專案開發</h2>
-      <div class="flow">
-        <div class="step"><b>Step 1</b><span>理解架構</span></div>
-        <div class="step"><b>Step 2</b><span>指定小功能</span></div>
-        <div class="step"><b>Step 3</b><span>修改程式碼</span></div>
-        <div class="step"><b>Step 4</b><span>執行測試</span></div>
-        <div class="step"><b>Step 5</b><span>看 diff 與總結</span></div>
-      </div>
-      <pre>示範指令：
-請先看這個專案架構，找出前端入口與主要元件。
-接著幫我新增一個搜尋欄位，能用關鍵字過濾列表。
-請沿用現有樣式，完成後跑測試或提供手動驗收步驟。</pre>
+      <p>工具包括：讀寫檔案、執行終端機指令、呼叫 API、瀏覽網頁。重要操作仍需人工審查確認。</p>
       <div class="notes">建議時間：8 分鐘</div>
     </section>
 
+    <!-- ===== SLIDE 15: MCP ===== -->
     <section class="slide">
-      <div class="eyebrow">Practice</div>
-      <h2>學員練習：兩選一，15 分鐘內完成</h2>
-      <div class="grid-2">
+      <div class="eyebrow">MCP</div>
+      <h2>MCP：AI 工具的「Type-C 通用接孔」</h2>
+      <div class="compare">
         <div class="box">
-          <span class="tag">文件任務</span>
-          <h3>整理課程資料夾</h3>
-          <p>請 Codex 掃描資料夾、分類內容、產生 README，並列出後續整理建議。</p>
+          <span class="tag red">過去的痛點</span>
+          <h3>規格不統一</h3>
+          <p>每個 AI 平台（OpenAI、Anthropic、Google）的工具串接規格不同。開發者寫好一個工具，必須為每個平台各改寫一套程式碼，非常低效。</p>
         </div>
         <div class="box">
-          <span class="tag alt">程式任務</span>
-          <h3>新增一個小功能</h3>
-          <p>請 Codex 理解專案後，新增搜尋、排序、空狀態或錯誤提示其中一項。</p>
+          <span class="tag">MCP 的解法</span>
+          <h3>統一工具介接標準</h3>
+          <p>遵守 MCP 規範開發工具，就像打造 <strong>Type-C 接頭</strong>：只需寫一次，所有支援 MCP 的 Agent 平台都能直接「隨插即用」。</p>
         </div>
       </div>
-      <pre>練習要求：
-- 先讓 Codex 解釋，不要直接改
-- 再給明確限制與驗收方式
-- 完成後請它總結修改與測試結果</pre>
+      <div class="box" style="margin-top:16px">
+        <span class="tag alt">完整架構</span>
+        <p style="font-size:18px;margin-top:8px">
+          <strong>LLM（大腦）</strong> ＋ <strong>Tool 外部工具（四肢）</strong> ＋ <strong>MCP（萬用卡榫）</strong> ＝ <strong>AI Agent（自主數位員工）</strong>
+        </p>
+      </div>
+      <div class="notes">建議時間：5 分鐘</div>
+    </section>
+
+    <!-- ===== SLIDE 16: Agent Skill ===== -->
+    <section class="slide">
+      <div class="eyebrow">Agent Skill</div>
+      <h2>Agent Skill：給 Agent 的專屬操作說明書</h2>
+      <div class="grid-2">
+        <div>
+          <ul>
+            <li><span>Agent 具備工具能力，但不知道你的<strong>私人習慣與格式要求</strong></span></li>
+            <li><span>Agent Skill 是一份 <strong>Markdown 說明文件</strong>，提前寫好讓 Agent 執行特定任務的 SOP</span></li>
+            <li><span>省去每次提問都要重複輸入長串提示詞的麻煩</span></li>
+          </ul>
+          <div class="flow flow-4" style="margin-top:20px">
+            <div class="step"><b>目標</b><span>最終要做什麼</span></div>
+            <div class="step"><b>步驟</b><span>先做什麼、再做什麼</span></div>
+            <div class="step"><b>規則</b><span>判斷邏輯</span></div>
+            <div class="step"><b>格式</b><span>輸出的排版要求</span></div>
+          </div>
+        </div>
+        <div class="box">
+          <span class="tag alt">MCP vs Agent Skill</span>
+          <ul class="small" style="margin-top:12px">
+            <li><span><strong>MCP</strong>：擴充 Agent 的「能力」（提供工具，如查天氣、讀檔案）</span></li>
+            <li><span><strong>Agent Skill</strong>：定義 Agent 的「行為準則」（提供說明書，規定步驟與格式）</span></li>
+          </ul>
+          <p style="margin-top:14px;font-size:17px">命名規則：資料夾名 = Skill 名稱，檔案必須命名為 <code>Skill.md</code>（首字母大寫）</p>
+        </div>
+      </div>
+      <div class="notes">建議時間：5 分鐘</div>
+    </section>
+
+    <!-- ===== SLIDE 17: Section break - Afternoon ===== -->
+    <section class="slide section-slide">
+      <div class="section-label">下午課程</div>
+      <h1>生成式 AI<br>實戰演練</h1>
+      <p>以工程師日常開發為主題，三個實作任務讓你立刻上手。</p>
+    </section>
+
+    <!-- ===== SLIDE 16: 下午任務概覽 ===== -->
+    <section class="slide">
+      <div class="eyebrow">Afternoon Overview</div>
+      <h2>下午三大實作任務</h2>
+      <div class="grid-3">
+        <div class="box">
+          <span class="tag blue">任務 A</span>
+          <h3>Debug 任務</h3>
+          <p>用 AI 快速了解一個陌生專案的架構，找出程式碼裡的技術債與問題點，整理成報告。</p>
+        </div>
+        <div class="box">
+          <span class="tag">任務 B</span>
+          <h3>UI Design 任務</h3>
+          <p>用自然語言描述需求，引導 AI 生成符合現代規範的前端介面（卡路里紀錄 App）。</p>
+        </div>
+        <div class="box">
+          <span class="tag alt">任務 C</span>
+          <h3>API Test 任務</h3>
+          <p>實作一個調用營養成分 API 的前端應用，讓使用者輸入食物名稱取得營養資訊。</p>
+        </div>
+      </div>
+      <p>每個任務都有獨立練習環境，點連結另開新視窗，邊看邊做。</p>
+    </section>
+
+    <!-- ===== SLIDE 17: 實作任務 1 - 了解陌生專案 ===== -->
+    <section class="slide">
+      <div class="eyebrow">實作技巧 ①</div>
+      <h2>用 AI 快速了解一個陌生專案</h2>
+      <pre>請先閱讀這個專案，不要修改任何檔案。
+
+請回覆：
+1. 專案用途是什麼？
+2. 主要資料夾與檔案結構
+3. 程式入口點在哪？
+4. 本機如何啟動？
+5. 你建議我先看哪 3 個檔案？</pre>
+      <ul>
+        <li><span>先要求「不要修改檔案」，把探索和實作分開</span></li>
+        <li><span>適合接手新專案、讀別人的程式、快速找方向</span></li>
+      </ul>
       <div class="notes">建議時間：10 分鐘</div>
     </section>
 
+    <!-- ===== SLIDE 18: 實作任務 2 - 找問題點 ===== -->
     <section class="slide">
-      <div class="eyebrow">Review</div>
-      <h2>看 Codex 的成果時，先看這些</h2>
-      <ul class="review-list">
-        <li><span><strong>Scope：</strong>是否只改了任務需要的範圍？</span></li>
-        <li><span><strong>Behavior：</strong>是否真的符合原本目標？</span></li>
-        <li><span><strong>Tests：</strong>是否有跑測試，或至少有手動驗收步驟？</span></li>
-        <li><span><strong>Risk：</strong>是否改到設定、刪資料、改 API contract 或安全邏輯？</span></li>
-        <li><span><strong>Diff：</strong>重要任務一定要看變更差異。</span></li>
-      </ul>
-      <div class="notes">建議時間：4 分鐘</div>
+      <div class="eyebrow">實作技巧 ②</div>
+      <h2>用 AI 找出程式碼裡的問題點</h2>
+      <div class="grid-2">
+        <div>
+          <ul>
+            <li><span><strong>技術債</strong>：過期寫法、冗餘程式碼、複雜度過高的函式</span></li>
+            <li><span><strong>安全漏洞</strong>：未驗證的輸入、硬編碼的密碼、SQL Injection 風險</span></li>
+            <li><span><strong>命名不一致</strong>：camelCase / snake_case 混用、語意不明的變數名</span></li>
+          </ul>
+        </div>
+        <div class="box">
+          <span class="tag red">Prompt 範例</span>
+          <pre style="font-size:15px;margin-top:10px">請分析這個專案，
+找出以下問題：
+- 技術債或過期寫法
+- 潛在安全風險
+- 命名不一致問題
+
+以條列格式整理，
+並標明位於哪個檔案。</pre>
+        </div>
+      </div>
+      <div class="notes">建議時間：10 分鐘</div>
     </section>
 
+    <!-- ===== SLIDE 19: 實作任務 3 - 整理報告與改善 ===== -->
+    <section class="slide">
+      <div class="eyebrow">實作技巧 ③④</div>
+      <h2>整理問題報告 &amp; 請 AI 提供改善程式碼</h2>
+      <div class="flow flow-4">
+        <div class="step"><b>Step 1</b><span>請 AI 列出所有問題點，按嚴重程度排序</span></div>
+        <div class="step"><b>Step 2</b><span>選擇優先處理的問題，要求 AI 提供改善建議</span></div>
+        <div class="step"><b>Step 3</b><span>請 AI 提供修改後的程式碼，說明修改理由</span></div>
+        <div class="step"><b>Step 4</b><span>審查 Diff，確認修改範圍符合預期再接受</span></div>
+      </div>
+      <p>記住：AI 提供的程式碼需要你來審查。<strong>看 Diff、問理由、驗收測試</strong>是你的責任。</p>
+      <div class="notes">建議時間：10 分鐘</div>
+    </section>
+
+    <!-- ===== SLIDE 20: 練習 A - Debug ===== -->
+    <section class="slide">
+      <div class="eyebrow">練習環節 A</div>
+      <h2>任務：釐清陌生專案 + 找技術債</h2>
+      <div class="center-practice">
+        <div>
+          <p class="practice-meta">目標：在不熟悉新專案的狀態下，利用 AI 快速釐清程式脈絡，找出問題點（過期寫法、命名不一致），並整理成一份改進建議報告。</p>
+          <p class="practice-meta">工具：Claude Chat / Claude Code / Codex</p>
+        </div>
+        <a href="debug/index.html" target="_blank" rel="noopener" class="practice-btn blue">
+          <span>開啟 Debug 練習環境</span>
+          <span class="arrow">↗</span>
+        </a>
+      </div>
+      <div class="notes">練習時間：30 分鐘</div>
+    </section>
+
+    <!-- ===== SLIDE 21: 練習 B - UI Design ===== -->
+    <section class="slide">
+      <div class="eyebrow">練習環節 B</div>
+      <h2>任務：用 AI 生成卡路里紀錄 Dashboard</h2>
+      <div class="center-practice">
+        <div>
+          <p class="practice-meta">目標：使用結構化 Prompt 引導 AI，僅透過 HTML + Tailwind CSS CDN + 原生 JavaScript，生成一個具備動態互動功能的「美食搜尋與卡路里紀錄」Dashboard。</p>
+          <p class="practice-meta">重點：學習如何撰寫包含角色設定、版面結構、樣式規範的 Prompt，並在生成後審查 AI 的程式碼。</p>
+        </div>
+        <a href="ui_design/index.html" target="_blank" rel="noopener" class="practice-btn">
+          <span>開啟 UI Design 練習環境</span>
+          <span class="arrow">↗</span>
+        </a>
+      </div>
+      <div class="notes">練習時間：45–60 分鐘</div>
+    </section>
+
+    <!-- ===== SLIDE 22: 練習 C - API Test ===== -->
+    <section class="slide">
+      <div class="eyebrow">練習環節 C</div>
+      <h2>任務：實作營養成分 API 前端應用</h2>
+      <div class="center-practice">
+        <div>
+          <p class="practice-meta">目標：讓使用者輸入食物名稱，透過 AI 協助調用真實的營養成分 API，實作一個可運作的前端查詢應用。</p>
+          <p class="practice-meta">重點：學習如何用 AI 處理 API 串接、錯誤處理、非同步邏輯，以及如何驗收 AI 產出的程式碼。</p>
+        </div>
+        <a href="api_test/index.html" target="_blank" rel="noopener" class="practice-btn alt">
+          <span>開啟 API Test 練習環境</span>
+          <span class="arrow">↗</span>
+        </a>
+      </div>
+      <div class="notes">練習時間：30 分鐘</div>
+    </section>
+
+    <!-- ===== SLIDE 23: AI 協作心法 ===== -->
+    <section class="slide">
+      <div class="eyebrow">Best Practices</div>
+      <h2>跟 AI 工具協作的基本節奏</h2>
+      <div class="flow flow-5">
+        <div class="step"><b>Explore</b><span>先讀懂專案，不急著改</span></div>
+        <div class="step"><b>Plan</b><span>確認修改範圍與限制</span></div>
+        <div class="step"><b>Implement</b><span>小步修改，保持可回滾</span></div>
+        <div class="step"><b>Verify</b><span>跑測試或手動驗收</span></div>
+        <div class="step"><b>Summarize</b><span>整理成果與潛在風險</span></div>
+      </div>
+      <pre>推薦工作流：
+「先分析，不修改」→「提出方案」→「最小範圍實作」→「跑測試」→「總結 diff」</pre>
+      <div class="notes">建議時間：5 分鐘</div>
+    </section>
+
+    <!-- ===== SLIDE 24: 常見錯誤 ===== -->
     <section class="slide">
       <div class="eyebrow">Common Mistakes</div>
-      <h2>初學者常見錯誤</h2>
-      <div class="grid-2">
+      <h2>初學者常見錯誤與正確做法</h2>
+      <div class="compare">
         <div class="box bad">
-          <span class="tag">避免</span>
+          <span class="tag red">避免</span>
           <ul class="small">
-            <li>一次丟太大任務</li>
-            <li>沒有說限制</li>
-            <li>沒有要求驗證</li>
-            <li>不看 diff 就接受修改</li>
+            <li><span>一次丟太大的任務</span></li>
+            <li><span>沒有說清楚限制條件</span></li>
+            <li><span>沒有要求驗證步驟</span></li>
+            <li><span>不看 Diff 就直接接受修改</span></li>
+            <li><span>把 secret / API key 寫進 Prompt</span></li>
           </ul>
         </div>
         <div class="box">
           <span class="tag">改成</span>
           <ul class="small">
-            <li>拆成探索、修改、驗證</li>
-            <li>列出不能碰的範圍</li>
-            <li>要求測試與手動檢查</li>
-            <li>請它解釋修改理由</li>
+            <li><span>拆成「探索 → 修改 → 驗證」三個步驟</span></li>
+            <li><span>明確列出不能碰的範圍</span></li>
+            <li><span>要求測試指令與手動驗收步驟</span></li>
+            <li><span>看 Diff，請 AI 解釋修改理由</span></li>
+            <li><span>用環境變數或佔位符代替機密資訊</span></li>
           </ul>
         </div>
       </div>
-      <div class="notes">建議時間：4 分鐘</div>
+      <div class="notes">建議時間：5 分鐘</div>
     </section>
 
-    <section class="slide">
-      <div class="eyebrow">Best Practices</div>
-      <h2>跟 Codex 協作的基本節奏</h2>
-      <div class="flow">
-        <div class="step"><b>Explore</b><span>先讀懂，不急著改</span></div>
-        <div class="step"><b>Plan</b><span>確認修改範圍</span></div>
-        <div class="step"><b>Implement</b><span>小步修改</span></div>
-        <div class="step"><b>Verify</b><span>測試與手動檢查</span></div>
-        <div class="step"><b>Summarize</b><span>整理成果與風險</span></div>
-      </div>
-      <pre>推薦工作流：
-「先分析，不修改」→「提出方案」→「實作」→「跑測試」→「總結 diff」</pre>
-      <div class="notes">建議時間：4 分鐘</div>
-    </section>
-
+    <!-- ===== SLIDE 25: Prompt 模板 ===== -->
     <section class="slide">
       <div class="eyebrow">Takeaway Template</div>
-      <h2>課後可直接複製的 Prompt</h2>
+      <h2>課後可直接複製使用的 Prompt</h2>
       <pre>請先閱讀目前專案，不要修改檔案。
-請說明專案架構、入口點、啟動方式，以及你建議先看的檔案。
+請說明專案架構、入口點、啟動方式，以及你建議先看的 3 個檔案。
 
 接著請幫我完成：[具體任務]
+
 限制：
-- [限制 1]
-- [限制 2]
+- [限制 1：例如不要改資料庫 schema]
+- [限制 2：例如優先沿用現有 component 風格]
 
 完成後請：
-1. 說明改了哪些檔案
-2. 跑可用的測試
-3. 提供手動驗收步驟
+1. 說明改了哪些檔案，以及修改理由
+2. 跑可用的測試（沒有就說明原因）
+3. 提供 3 個手動驗收步驟
 4. 列出你認為還有風險的地方</pre>
-      <div class="notes">建議時間：2 分鐘</div>
+      <div class="notes">建議時間：3 分鐘</div>
     </section>
 
+    <!-- ===== SLIDE 26: 結語 ===== -->
     <section class="slide">
       <div class="eyebrow">Closing</div>
-      <h2>把 Codex 用好，不是靠一句神奇指令</h2>
+      <h2>把 AI 工具用好，不是靠一句神奇指令</h2>
       <ul>
-        <li>清楚描述目標，讓它知道終點。</li>
-        <li>給出限制，讓它知道邊界。</li>
-        <li>要求驗證，讓結果能被檢查。</li>
-        <li>審查 diff，保留工程師的判斷權。</li>
+        <li><span>清楚描述目標，讓 AI 知道<strong>終點</strong>在哪</span></li>
+        <li><span>給出限制，讓 AI 知道<strong>邊界</strong>在哪</span></li>
+        <li><span>要求驗證，讓結果<strong>能被檢查</strong></span></li>
+        <li><span>審查 Diff，保留<strong>工程師的判斷權</strong></span></li>
+        <li><span>AI 是你的 Junior Pair，不是你的替代品</span></li>
       </ul>
-      <p>最實用的心法：把大任務拆成「理解、修改、驗證、總結」。</p>
-      <div class="notes">建議時間：2 分鐘</div>
+      <p>最實用的心法：把大任務拆成「<strong>理解 → 修改 → 驗證 → 總結</strong>」。</p>
     </section>
+
   </main>
 
   <div class="footer">
-    <span id="counter">1 / 20</span>
+    <span id="counter">1 / 28</span>
     <div class="progress" aria-hidden="true"><span id="bar"></span></div>
     <span>← → / Space 切換投影片</span>
   </div>
@@ -907,43 +1024,30 @@
 
     function showSlide(index) {
       current = Math.max(0, Math.min(index, slides.length - 1));
-      slides.forEach((slide, slideIndex) => {
-        slide.classList.toggle("active", slideIndex === current);
+      slides.forEach((slide, i) => {
+        slide.classList.toggle("active", i === current);
       });
       counter.textContent = `${current + 1} / ${slides.length}`;
       bar.style.width = `${((current + 1) / slides.length) * 100}%`;
       history.replaceState(null, "", `#${current + 1}`);
     }
 
-    function move(delta) {
-      showSlide(current + delta);
-    }
+    function move(delta) { showSlide(current + delta); }
 
-    document.addEventListener("keydown", (event) => {
-      if (event.key === "ArrowRight" || event.key === " " || event.key === "PageDown") {
-        event.preventDefault();
-        move(1);
-      }
-      if (event.key === "ArrowLeft" || event.key === "PageUp") {
-        event.preventDefault();
-        move(-1);
-      }
-      if (event.key === "Home") {
-        showSlide(0);
-      }
-      if (event.key === "End") {
-        showSlide(slides.length - 1);
-      }
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "ArrowRight" || e.key === " " || e.key === "PageDown") { e.preventDefault(); move(1); }
+      if (e.key === "ArrowLeft" || e.key === "PageUp") { e.preventDefault(); move(-1); }
+      if (e.key === "Home") showSlide(0);
+      if (e.key === "End") showSlide(slides.length - 1);
     });
 
-    document.addEventListener("click", (event) => {
-      const midpoint = window.innerWidth / 2;
-      move(event.clientX >= midpoint ? 1 : -1);
+    document.addEventListener("click", (e) => {
+      // Don't hijack link clicks
+      if (e.target.closest("a")) return;
+      move(e.clientX >= window.innerWidth / 2 ? 1 : -1);
     });
 
-    const initial = Number.parseInt(location.hash.replace("#", ""), 10);
+    const initial = parseInt(location.hash.replace("#", ""), 10);
     showSlide(Number.isFinite(initial) ? initial - 1 : 0);
   </script>
-
-
 </body></html>
