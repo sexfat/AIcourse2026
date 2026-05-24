@@ -1,0 +1,775 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NutriSearch — 營養成分查詢 Demo</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:       #f8fafc;
+      --card:     #ffffff;
+      --border:   #e2e8f0;
+      --accent:   #059669;
+      --accent-h: #047857;
+      --accent-d: rgba(5,150,105,0.08);
+      --text:     #1e293b;
+      --text-mid: #64748b;
+      --text-dim: #94a3b8;
+      --red:      #ef4444;
+      --yellow:   #f59e0b;
+      --blue:     #3b82f6;
+      --sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+      --mono: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+    }
+
+    body {
+      background: var(--bg);
+      font-family: var(--sans);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* ── HEADER ── */
+    header {
+      background: #fff;
+      border-bottom: 1px solid var(--border);
+      padding: 0 24px;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .logo-icon {
+      width: 32px; height: 32px;
+      background: var(--accent);
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px;
+    }
+    .logo-text { font-size: 16px; font-weight: 800; color: var(--text); letter-spacing: -0.02em; }
+    .logo-sub { font-size: 11px; color: var(--text-dim); margin-left: 2px; }
+    .header-badge {
+      margin-left: auto;
+      font-size: 11px; font-weight: 600;
+      padding: 3px 10px; border-radius: 99px;
+      background: var(--accent-d); color: var(--accent);
+      border: 1px solid rgba(5,150,105,0.2);
+      font-family: var(--mono);
+    }
+
+    /* ── MAIN LAYOUT ── */
+    .container {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 32px 24px;
+    }
+
+    /* ── SEARCH ── */
+    .search-area {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+    .search-title {
+      font-size: 28px;
+      font-weight: 800;
+      color: var(--text);
+      letter-spacing: -0.02em;
+      margin-bottom: 8px;
+    }
+    .search-title span { color: var(--accent); }
+    .search-sub {
+      font-size: 14px;
+      color: var(--text-mid);
+      margin-bottom: 24px;
+    }
+    .search-box {
+      display: flex;
+      gap: 10px;
+      max-width: 560px;
+      margin: 0 auto;
+    }
+    .search-input {
+      flex: 1;
+      padding: 12px 18px;
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      font-size: 15px;
+      font-family: var(--sans);
+      color: var(--text);
+      background: #fff;
+      outline: none;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    .search-input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(5,150,105,0.12);
+    }
+    .search-input::placeholder { color: var(--text-dim); }
+    .search-btn {
+      padding: 12px 24px;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 700;
+      font-family: var(--sans);
+      cursor: pointer;
+      transition: background 0.15s, transform 0.1s;
+      white-space: nowrap;
+    }
+    .search-btn:hover { background: var(--accent-h); transform: translateY(-1px); }
+    .search-btn:active { transform: translateY(0); }
+    .search-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+    /* suggestion chips */
+    .chips {
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-top: 14px;
+    }
+    .chip {
+      font-size: 12px;
+      padding: 4px 14px;
+      border: 1px solid var(--border);
+      border-radius: 99px;
+      background: #fff;
+      color: var(--text-mid);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .chip:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-d); }
+
+    /* ── RESULT STATES ── */
+    .state-box {
+      text-align: center;
+      padding: 56px 24px;
+      color: var(--text-dim);
+    }
+    .state-icon { font-size: 40px; margin-bottom: 14px; display: block; }
+    .state-title { font-size: 16px; font-weight: 600; color: var(--text-mid); margin-bottom: 6px; }
+    .state-desc { font-size: 13px; }
+
+    /* loading skeleton */
+    .loading-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 16px;
+    }
+    .skeleton-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+    }
+    .skel {
+      background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.4s infinite;
+      border-radius: 6px;
+    }
+    .skel-title { height: 18px; width: 70%; margin-bottom: 16px; }
+    .skel-bar { height: 10px; margin-bottom: 10px; }
+    .skel-bar:nth-child(2) { width: 55%; }
+    .skel-bar:nth-child(3) { width: 70%; }
+    .skel-bar:nth-child(4) { width: 45%; }
+    .skel-bar:nth-child(5) { width: 60%; }
+    @keyframes shimmer {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+
+    /* ── RESULT HEADER ── */
+    .result-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+    .result-label {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-mid);
+    }
+    .result-count {
+      font-size: 12px;
+      color: var(--text-dim);
+      font-family: var(--mono);
+    }
+
+    /* ── FOOD CARDS ── */
+    .results-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 16px;
+    }
+
+    .food-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+      transition: border-color 0.15s, box-shadow 0.15s, transform 0.15s;
+      display: flex;
+      flex-direction: column;
+    }
+    .food-card:hover {
+      border-color: #cbd5e1;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.07);
+      transform: translateY(-2px);
+    }
+    .food-card.added { border-color: var(--accent); background: rgba(5,150,105,0.02); }
+
+    .food-name {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 4px;
+      line-height: 1.4;
+      /* clamp long names */
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .food-per {
+      font-size: 11px;
+      color: var(--text-dim);
+      font-family: var(--mono);
+      margin-bottom: 16px;
+    }
+
+    .nutri-list { flex: 1; margin-bottom: 16px; }
+    .nutri-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+    .nutri-row:last-child { margin-bottom: 0; }
+    .nutri-label { font-size: 11px; color: var(--text-mid); width: 52px; flex-shrink: 0; }
+    .nutri-bar-wrap {
+      flex: 1;
+      height: 6px;
+      background: var(--bg);
+      border-radius: 99px;
+      overflow: hidden;
+    }
+    .nutri-bar {
+      height: 100%;
+      border-radius: 99px;
+      transition: width 0.4s ease;
+    }
+    .nutri-val {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text);
+      width: 44px;
+      text-align: right;
+      flex-shrink: 0;
+      font-family: var(--mono);
+    }
+
+    /* bar colors */
+    .bar-kcal { background: #f59e0b; }
+    .bar-prot { background: #3b82f6; }
+    .bar-carb { background: #8b5cf6; }
+    .bar-fat  { background: #ef4444; }
+
+    .add-btn {
+      width: 100%;
+      padding: 9px;
+      border: 1.5px solid var(--accent);
+      border-radius: 8px;
+      background: transparent;
+      color: var(--accent);
+      font-size: 13px;
+      font-weight: 700;
+      font-family: var(--sans);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .add-btn:hover { background: var(--accent); color: #fff; }
+    .add-btn.added { background: var(--accent); color: #fff; border-color: var(--accent); cursor: default; }
+    .add-btn.added:hover { background: var(--accent); }
+
+    /* ── DIARY ── */
+    .diary-section {
+      margin-top: 48px;
+      border-top: 1px solid var(--border);
+      padding-top: 32px;
+    }
+    .diary-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+    .diary-title { font-size: 16px; font-weight: 700; color: var(--text); }
+    .clear-btn {
+      font-size: 12px;
+      color: var(--text-dim);
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 4px 12px;
+      cursor: pointer;
+      font-family: var(--sans);
+      transition: all 0.15s;
+    }
+    .clear-btn:hover { color: var(--red); border-color: var(--red); }
+
+    .diary-list { display: flex; flex-direction: column; gap: 8px; }
+    .diary-empty {
+      text-align: center;
+      padding: 32px;
+      color: var(--text-dim);
+      font-size: 13px;
+      border: 1.5px dashed var(--border);
+      border-radius: 10px;
+    }
+
+    .diary-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+    }
+    .diary-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--accent);
+      flex-shrink: 0;
+    }
+    .diary-name { flex: 1; font-size: 13px; font-weight: 600; color: var(--text); }
+    .diary-kcal { font-size: 12px; color: var(--text-mid); font-family: var(--mono); }
+    .diary-del {
+      background: none; border: none;
+      color: var(--text-dim); font-size: 16px;
+      cursor: pointer; padding: 0 4px;
+      transition: color 0.15s;
+      line-height: 1;
+    }
+    .diary-del:hover { color: var(--red); }
+
+    /* ── TOTAL BAR ── */
+    .total-bar {
+      margin-top: 16px;
+      padding: 16px 20px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+    }
+    .total-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+    .total-label { font-size: 13px; font-weight: 600; color: var(--text); }
+    .total-val { font-size: 18px; font-weight: 800; color: var(--accent); font-family: var(--mono); }
+    .total-val.over { color: var(--red); }
+    .prog-wrap {
+      height: 8px;
+      background: var(--bg);
+      border-radius: 99px;
+      overflow: hidden;
+    }
+    .prog-bar {
+      height: 100%;
+      background: var(--accent);
+      border-radius: 99px;
+      transition: width 0.4s ease, background 0.3s;
+    }
+    .prog-bar.over { background: var(--red); }
+    .prog-labels {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 6px;
+    }
+    .prog-lbl { font-size: 11px; color: var(--text-dim); font-family: var(--mono); }
+
+    /* ── FOOTER ── */
+    .page-footer {
+      text-align: center;
+      padding: 32px 24px;
+      font-size: 12px;
+      color: var(--text-dim);
+      border-top: 1px solid var(--border);
+      margin-top: 48px;
+    }
+    .page-footer a { color: var(--accent); text-decoration: none; }
+    .page-footer a:hover { text-decoration: underline; }
+
+    /* ── TOAST ── */
+    .toast {
+      position: fixed;
+      bottom: 24px; right: 24px;
+      padding: 12px 20px;
+      background: #1e293b;
+      color: #fff;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 600;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.18);
+      transform: translateY(80px);
+      opacity: 0;
+      transition: all 0.25s ease;
+      z-index: 999;
+    }
+    .toast.show { transform: translateY(0); opacity: 1; }
+
+    /* ── ERROR BANNER ── */
+    .error-banner {
+      background: rgba(239,68,68,0.07);
+      border: 1px solid rgba(239,68,68,0.25);
+      border-radius: 10px;
+      padding: 14px 20px;
+      font-size: 13px;
+      color: #dc2626;
+      margin-bottom: 20px;
+      display: none;
+    }
+
+    @media (max-width: 600px) {
+      .search-box { flex-direction: column; }
+      .results-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-icon">🥗</div>
+    <div>
+      <div class="logo-text">NutriSearch</div>
+      <div class="logo-sub">營養成分查詢 Demo</div>
+    </div>
+  </div>
+  <span class="header-badge">Open Food Facts API</span>
+</header>
+
+<div class="container">
+
+  <!-- SEARCH -->
+  <div class="search-area">
+    <div class="search-title">搜尋食物的<span>營養成分</span></div>
+    <div class="search-sub">輸入食物名稱（英文效果較佳），即時查詢熱量、蛋白質、碳水與脂肪</div>
+    <div class="search-box">
+      <input
+        type="text"
+        id="searchInput"
+        class="search-input"
+        placeholder="例如：chicken breast, apple, rice..."
+        autocomplete="off"
+      />
+      <button id="searchBtn" class="search-btn" onclick="handleSearch()">搜尋</button>
+    </div>
+    <div class="chips">
+      <span class="chip" onclick="quickSearch('chicken breast')">🍗 Chicken</span>
+      <span class="chip" onclick="quickSearch('apple')">🍎 Apple</span>
+      <span class="chip" onclick="quickSearch('rice')">🍚 Rice</span>
+      <span class="chip" onclick="quickSearch('egg')">🥚 Egg</span>
+      <span class="chip" onclick="quickSearch('salmon')">🐟 Salmon</span>
+      <span class="chip" onclick="quickSearch('banana')">🍌 Banana</span>
+    </div>
+  </div>
+
+  <!-- ERROR BANNER -->
+  <div class="error-banner" id="errorBanner"></div>
+
+  <!-- RESULTS AREA -->
+  <div id="resultsArea">
+    <div class="state-box">
+      <span class="state-icon">🔍</span>
+      <div class="state-title">輸入食物名稱開始查詢</div>
+      <div class="state-desc">資料來源：Open Food Facts（免費開放資料庫）</div>
+    </div>
+  </div>
+
+  <!-- DIARY -->
+  <div class="diary-section" id="diarySection">
+    <div class="diary-header">
+      <div class="diary-title">📋 今日飲食紀錄</div>
+      <button class="clear-btn" onclick="clearDiary()">清空紀錄</button>
+    </div>
+    <div class="diary-list" id="diaryList">
+      <div class="diary-empty">尚未加入任何食物<br>搜尋後點擊「加入紀錄」</div>
+    </div>
+    <div class="total-bar" id="totalBar">
+      <div class="total-row">
+        <span class="total-label">今日攝取熱量</span>
+        <span class="total-val" id="totalKcal">0 kcal</span>
+      </div>
+      <div class="prog-wrap">
+        <div class="prog-bar" id="progBar" style="width:0%"></div>
+      </div>
+      <div class="prog-labels">
+        <span class="prog-lbl">0 kcal</span>
+        <span class="prog-lbl">目標 2000 kcal</span>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="page-footer">
+  資料來源：<a href="https://world.openfoodfacts.org" target="_blank">Open Food Facts</a>
+  &nbsp;·&nbsp;
+  AI 實務課程 Unit 04 — API 串接實戰 Demo
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  /* ── State ── */
+  const state = {
+    results: [],
+    diary: [],
+    loading: false,
+    goal: 2000,
+  };
+
+  /* ── AbortController for race condition prevention ── */
+  let currentController = null;
+
+  /* ── API: searchFood ── */
+  async function searchFood(query) {
+    // Cancel previous request if still pending
+    if (currentController) {
+      currentController.abort();
+    }
+    currentController = new AbortController();
+    const signal = currentController.signal;
+
+    const url = `https://world.openfoodfacts.org/cgi/search.pl?search_terms=${encodeURIComponent(query)}&json=1&page_size=6&fields=product_name,nutriments`;
+
+    const res = await fetch(url, { signal });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+
+    return (data.products || [])
+      .filter(p => p.product_name)
+      .map(p => {
+        const n = p.nutriments || {};
+        return {
+          id: Math.random().toString(36).slice(2),
+          name: p.product_name,
+          kcal: Math.round(n['energy-kcal_100g'] ?? n['energy_100g'] ?? 0),
+          protein: Math.round((n['proteins_100g'] ?? 0) * 10) / 10,
+          carbs: Math.round((n['carbohydrates_100g'] ?? 0) * 10) / 10,
+          fat: Math.round((n['fat_100g'] ?? 0) * 10) / 10,
+        };
+      });
+  }
+
+  /* ── Handle Search ── */
+  async function handleSearch() {
+    const query = document.getElementById('searchInput').value.trim();
+    if (!query) return;
+
+    hideError();
+    state.loading = true;
+    renderResults();
+
+    document.getElementById('searchBtn').disabled = true;
+
+    try {
+      const foods = await searchFood(query);
+      state.results = foods;
+    } catch (err) {
+      if (err.name === 'AbortError') return; // Ignore cancelled request
+      state.results = [];
+      showError('API 呼叫失敗，請檢查網路連線後再試。');
+    } finally {
+      state.loading = false;
+      document.getElementById('searchBtn').disabled = false;
+      renderResults();
+    }
+  }
+
+  function quickSearch(term) {
+    document.getElementById('searchInput').value = term;
+    handleSearch();
+  }
+
+  /* ── Render Results ── */
+  function renderResults() {
+    const area = document.getElementById('resultsArea');
+
+    if (state.loading) {
+      area.innerHTML = `
+        <div class="result-header">
+          <span class="result-label">搜尋中...</span>
+        </div>
+        <div class="loading-grid">
+          ${[1,2,3,4,5,6].map(() => `
+            <div class="skeleton-card">
+              <div class="skel skel-title"></div>
+              <div class="skel skel-bar" style="width:60%"></div>
+              <div class="skel skel-bar" style="width:75%"></div>
+              <div class="skel skel-bar" style="width:50%"></div>
+              <div class="skel skel-bar" style="width:65%"></div>
+            </div>
+          `).join('')}
+        </div>`;
+      return;
+    }
+
+    if (state.results.length === 0) {
+      area.innerHTML = `
+        <div class="state-box">
+          <span class="state-icon">🔲</span>
+          <div class="state-title">查無結果</div>
+          <div class="state-desc">請嘗試其他關鍵字（建議使用英文）</div>
+        </div>`;
+      return;
+    }
+
+    const addedIds = new Set(state.diary.map(d => d.sourceId));
+
+    area.innerHTML = `
+      <div class="result-header">
+        <span class="result-label">搜尋結果</span>
+        <span class="result-count">${state.results.length} 筆 · per 100g</span>
+      </div>
+      <div class="results-grid">
+        ${state.results.map(food => {
+          const isAdded = addedIds.has(food.id);
+          const kcalPct = Math.min((food.kcal / 900) * 100, 100);
+          const protPct = Math.min((food.protein / 50) * 100, 100);
+          const carbPct = Math.min((food.carbs / 100) * 100, 100);
+          const fatPct  = Math.min((food.fat / 80) * 100, 100);
+          return `
+          <div class="food-card${isAdded ? ' added' : ''}" id="card-${food.id}">
+            <div class="food-name" title="${escHtml(food.name)}">${escHtml(food.name)}</div>
+            <div class="food-per">per 100 g</div>
+            <div class="nutri-list">
+              <div class="nutri-row">
+                <span class="nutri-label">熱量</span>
+                <div class="nutri-bar-wrap"><div class="nutri-bar bar-kcal" style="width:${kcalPct}%"></div></div>
+                <span class="nutri-val">${food.kcal} kcal</span>
+              </div>
+              <div class="nutri-row">
+                <span class="nutri-label">蛋白質</span>
+                <div class="nutri-bar-wrap"><div class="nutri-bar bar-prot" style="width:${protPct}%"></div></div>
+                <span class="nutri-val">${food.protein} g</span>
+              </div>
+              <div class="nutri-row">
+                <span class="nutri-label">碳水</span>
+                <div class="nutri-bar-wrap"><div class="nutri-bar bar-carb" style="width:${carbPct}%"></div></div>
+                <span class="nutri-val">${food.carbs} g</span>
+              </div>
+              <div class="nutri-row">
+                <span class="nutri-label">脂肪</span>
+                <div class="nutri-bar-wrap"><div class="nutri-bar bar-fat" style="width:${fatPct}%"></div></div>
+                <span class="nutri-val">${food.fat} g</span>
+              </div>
+            </div>
+            <button
+              class="add-btn${isAdded ? ' added' : ''}"
+              onclick="addToDiary('${food.id}')"
+              ${isAdded ? 'disabled' : ''}
+            >${isAdded ? '✓ 已加入' : '+ 加入紀錄'}</button>
+          </div>`;
+        }).join('')}
+      </div>`;
+  }
+
+  /* ── Diary ── */
+  function addToDiary(foodId) {
+    const food = state.results.find(f => f.id === foodId);
+    if (!food) return;
+    state.diary.push({ ...food, sourceId: food.id, id: Date.now() });
+    renderResults();
+    renderDiary();
+    showToast(`✓ 已加入「${food.name.slice(0, 20)}${food.name.length > 20 ? '…' : ''}」`);
+  }
+
+  function removeDiary(id) {
+    state.diary = state.diary.filter(d => d.id !== id);
+    renderResults();
+    renderDiary();
+  }
+
+  function clearDiary() {
+    state.diary = [];
+    renderResults();
+    renderDiary();
+  }
+
+  function renderDiary() {
+    const list = document.getElementById('diaryList');
+    const totalEl = document.getElementById('totalKcal');
+    const bar = document.getElementById('progBar');
+
+    if (state.diary.length === 0) {
+      list.innerHTML = '<div class="diary-empty">尚未加入任何食物<br>搜尋後點擊「加入紀錄」</div>';
+    } else {
+      list.innerHTML = state.diary.map(item => `
+        <div class="diary-item">
+          <div class="diary-dot"></div>
+          <span class="diary-name">${escHtml(item.name.length > 40 ? item.name.slice(0, 40) + '…' : item.name)}</span>
+          <span class="diary-kcal">${item.kcal} kcal/100g</span>
+          <button class="diary-del" onclick="removeDiary(${item.id})" title="移除">×</button>
+        </div>`).join('');
+    }
+
+    const total = state.diary.reduce((s, d) => s + d.kcal, 0);
+    const pct = Math.min((total / state.goal) * 100, 100);
+    const isOver = total > state.goal;
+
+    totalEl.textContent = `${total} kcal`;
+    totalEl.className = 'total-val' + (isOver ? ' over' : '');
+    bar.style.width = pct + '%';
+    bar.className = 'prog-bar' + (isOver ? ' over' : '');
+  }
+
+  /* ── Error ── */
+  function showError(msg) {
+    const el = document.getElementById('errorBanner');
+    el.textContent = '⚠️  ' + msg;
+    el.style.display = 'block';
+  }
+  function hideError() {
+    document.getElementById('errorBanner').style.display = 'none';
+  }
+
+  /* ── Toast ── */
+  let toastTimer;
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => t.classList.remove('show'), 2200);
+  }
+
+  /* ── Utils ── */
+  function escHtml(s) {
+    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  /* ── Enter key ── */
+  document.getElementById('searchInput').addEventListener('keydown', e => {
+    if (e.key === 'Enter') handleSearch();
+  });
+</script>
+</body>
+</html>

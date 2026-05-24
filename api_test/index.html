@@ -1,0 +1,812 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>用 AI 串接外部 API｜AI 實務課程</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:         #ffffff;
+      --bg-soft:    #f7f8fa;
+      --bg-card:    #ffffff;
+      --border:     #e5e7eb;
+      --border-h:   #d1d5db;
+      --accent:     #7c3aed;
+      --accent-dim: rgba(124,58,237,0.07);
+      --accent-mid: rgba(124,58,237,0.16);
+      --accent-txt: #6d28d9;
+      --green:      #16a34a;
+      --green-dim:  rgba(22,163,74,0.08);
+      --orange:     #ea580c;
+      --orange-dim: rgba(234,88,12,0.08);
+      --red:        #dc2626;
+      --red-dim:    rgba(220,38,38,0.07);
+      --yellow:     #d97706;
+      --yellow-dim: rgba(217,119,6,0.08);
+      --text:       #374151;
+      --text-dark:  #111827;
+      --text-mid:   #6b7280;
+      --text-light: #9ca3af;
+      --sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+      --mono: 'SF Mono', 'Fira Code', 'Cascadia Code', 'Consolas', 'Courier New', monospace;
+      --nav-w: 220px;
+      --top-h: 56px;
+    }
+
+    html { scroll-behavior: smooth; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+      font-size: 15px;
+      line-height: 1.65;
+    }
+
+    /* ─── TOP BAR ─── */
+    .topbar {
+      position: fixed; top: 0; left: 0; right: 0;
+      height: var(--top-h);
+      background: #fff;
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center;
+      padding: 0 24px; z-index: 200;
+    }
+    .topbar-brand {
+      font-family: var(--mono); font-size: 13px; font-weight: 700;
+      color: var(--text-dark); display: flex; align-items: center; gap: 8px;
+    }
+    .topbar-brand .slash { color: var(--text-light); font-weight: 400; }
+    .topbar-brand .unit  { color: var(--accent-txt); }
+    .topbar-pill {
+      margin-left: 16px; font-size: 11px; font-weight: 600;
+      letter-spacing: 0.06em; padding: 3px 10px; border-radius: 99px;
+      background: var(--accent-dim); color: var(--accent-txt);
+      border: 1px solid rgba(124,58,237,0.2);
+    }
+    .topbar-right {
+      margin-left: auto; font-size: 12px; color: var(--text-light);
+      display: flex; align-items: center; gap: 6px;
+    }
+    .live-dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: var(--accent);
+      animation: pulse 2s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%,100% { opacity: 1; transform: scale(1); }
+      50%      { opacity: 0.4; transform: scale(0.8); }
+    }
+
+    /* ─── LAYOUT ─── */
+    .layout { display: flex; padding-top: var(--top-h); min-height: 100vh; }
+
+    /* ─── SIDEBAR ─── */
+    .sidenav {
+      position: fixed; top: var(--top-h); left: 0;
+      width: var(--nav-w); height: calc(100vh - var(--top-h));
+      background: var(--bg-soft); border-right: 1px solid var(--border);
+      overflow-y: auto; padding: 24px 0; z-index: 100;
+    }
+    .nav-group-label {
+      font-size: 10px; font-weight: 700; letter-spacing: 0.12em;
+      text-transform: uppercase; color: var(--text-light);
+      padding: 0 20px; margin-bottom: 6px; margin-top: 20px;
+    }
+    .nav-group-label:first-child { margin-top: 0; }
+    .nav-link {
+      display: flex; align-items: center; gap: 10px;
+      padding: 8px 20px; font-size: 13px; color: var(--text-mid);
+      text-decoration: none; border-left: 2px solid transparent;
+      transition: all 0.15s; cursor: pointer;
+    }
+    .nav-link:hover { background: rgba(0,0,0,0.04); color: var(--text-dark); }
+    .nav-link.active {
+      color: var(--accent-txt); border-left-color: var(--accent);
+      background: var(--accent-dim); font-weight: 600;
+    }
+    .nav-link .ni { font-size: 14px; flex-shrink: 0; }
+    .nav-link .nl { flex: 1; }
+    .nav-link .nc {
+      font-size: 10px; color: var(--text-light);
+      background: var(--border); padding: 1px 6px; border-radius: 99px;
+    }
+    .nav-divider { height: 1px; background: var(--border); margin: 16px 20px; }
+
+    .nav-demo-btn {
+      display: flex; align-items: center; gap: 8px;
+      margin: 12px 16px 0; padding: 10px 16px;
+      background: var(--accent); color: #fff;
+      border-radius: 8px; font-size: 12px; font-weight: 700;
+      text-decoration: none; transition: opacity 0.15s, transform 0.1s;
+    }
+    .nav-demo-btn:hover { opacity: 0.88; transform: translateY(-1px); }
+
+    /* ─── MAIN ─── */
+    main { margin-left: var(--nav-w); flex: 1; min-width: 0; }
+
+    /* ─── HERO ─── */
+    .hero {
+      padding: 64px 64px 56px; border-bottom: 1px solid var(--border);
+      position: relative; overflow: hidden;
+    }
+    .hero::before {
+      content: ''; position: absolute; top: -80px; right: -80px;
+      width: 400px; height: 400px;
+      background: radial-gradient(circle, rgba(124,58,237,0.05) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .hero-eyebrow {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: 12px; font-weight: 600; color: var(--accent-txt);
+      background: var(--accent-dim); border: 1px solid rgba(124,58,237,0.2);
+      padding: 4px 12px; border-radius: 99px; margin-bottom: 24px;
+      letter-spacing: 0.04em;
+    }
+    .hero-unit-label {
+      font-family: var(--mono); font-size: 12px;
+      color: var(--text-light); margin-bottom: 10px;
+    }
+    h1 {
+      font-size: clamp(36px, 5vw, 58px); font-weight: 800;
+      color: var(--text-dark); line-height: 1.1;
+      letter-spacing: -0.025em; margin-bottom: 16px;
+    }
+    h1 em { font-style: normal; color: var(--accent-txt); }
+    .hero-sub {
+      font-size: 17px; color: var(--text-mid);
+      max-width: 560px; margin-bottom: 32px;
+    }
+    .hero-tags { display: flex; gap: 8px; flex-wrap: wrap; }
+    .htag {
+      font-size: 12px; color: var(--text-mid);
+      border: 1px solid var(--border-h); padding: 4px 12px;
+      border-radius: 99px; background: var(--bg-soft);
+    }
+
+    /* ─── SECTION ─── */
+    .section {
+      padding: 56px 64px; border-bottom: 1px solid var(--border);
+      scroll-margin-top: calc(var(--top-h) + 16px);
+    }
+    .sec-header { display: flex; align-items: center; gap: 12px; margin-bottom: 32px; }
+    .sec-icon {
+      width: 36px; height: 36px; border-radius: 8px;
+      background: var(--accent-dim);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px; flex-shrink: 0;
+    }
+    .sec-t { font-size: 20px; font-weight: 700; color: var(--text-dark); letter-spacing: -0.01em; }
+    .sec-sub { font-size: 13px; color: var(--text-light); font-family: var(--mono); margin-left: auto; }
+
+    /* ─── CARDS ─── */
+    .cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+    .card {
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: 12px; padding: 24px;
+      transition: border-color 0.15s, box-shadow 0.15s, transform 0.15s;
+    }
+    .card:hover {
+      border-color: var(--border-h);
+      box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+      transform: translateY(-2px);
+    }
+    .c-num { font-family: var(--mono); font-size: 10px; color: var(--text-light); margin-bottom: 14px; }
+    .c-icon { font-size: 26px; margin-bottom: 12px; display: block; }
+    .c-title { font-size: 14px; font-weight: 700; color: var(--text-dark); margin-bottom: 8px; }
+    .c-desc { font-size: 13px; color: var(--text-mid); line-height: 1.75; }
+
+    /* ─── STEPS ─── */
+    .steps { display: flex; flex-direction: column; gap: 12px; }
+    .step {
+      display: flex; border: 1px solid var(--border);
+      border-radius: 12px; overflow: hidden;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    .step:hover { border-color: var(--border-h); box-shadow: 0 2px 12px rgba(0,0,0,0.05); }
+    .step-n {
+      min-width: 56px; background: var(--bg-soft);
+      display: flex; align-items: flex-start; justify-content: center;
+      padding-top: 22px; border-right: 1px solid var(--border);
+      font-family: var(--mono); font-size: 12px;
+      font-weight: 700; color: var(--accent-txt);
+    }
+    .step-body { padding: 20px 24px; flex: 1; }
+    .step-title {
+      font-size: 14px; font-weight: 700; color: var(--text-dark);
+      display: flex; align-items: center; gap: 10px; margin-bottom: 6px;
+    }
+    .badge {
+      font-size: 10px; font-weight: 700; letter-spacing: 0.08em;
+      padding: 2px 8px; border-radius: 99px;
+      background: var(--accent-dim); color: var(--accent-txt);
+      border: 1px solid rgba(124,58,237,0.2);
+    }
+    .badge-time {
+      font-size: 10px; font-weight: 600; padding: 2px 8px;
+      border-radius: 99px; background: var(--bg-soft);
+      color: var(--text-light); border: 1px solid var(--border);
+      font-family: var(--mono);
+    }
+    .step-desc { font-size: 13px; color: var(--text-mid); line-height: 1.8; }
+
+    code {
+      font-family: var(--mono); font-size: 12px;
+      background: var(--bg-soft); border: 1px solid var(--border);
+      color: var(--accent-txt); padding: 1px 6px; border-radius: 4px;
+    }
+
+    /* URL highlight block */
+    .url-block {
+      margin-top: 12px; padding: 12px 16px;
+      background: #fafafa; border: 1px solid var(--border);
+      border-radius: 8px; border-left: 3px solid var(--accent);
+      font-family: var(--mono); font-size: 12px;
+      color: var(--text); word-break: break-all; line-height: 1.8;
+    }
+    .url-block a { color: var(--accent-txt); text-decoration: none; }
+    .url-block a:hover { text-decoration: underline; }
+
+    /* flow arrow */
+    .flow {
+      display: flex; align-items: center; gap: 8px;
+      margin-top: 14px; flex-wrap: wrap;
+    }
+    .flow-node {
+      display: flex; align-items: center; gap: 6px;
+      padding: 6px 14px; border-radius: 8px;
+      font-size: 12px; font-weight: 600;
+      border: 1px solid var(--border); background: var(--bg-soft);
+      color: var(--text-dark);
+    }
+    .flow-arrow { color: var(--text-light); font-size: 14px; }
+
+    /* ─── PROMPTS ─── */
+    .prompts { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .pcard { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+    .pcard-head {
+      padding: 12px 16px; background: var(--bg-soft);
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .pcard-dots { display: flex; gap: 5px; }
+    .pdot { width: 10px; height: 10px; border-radius: 50%; background: var(--border-h); }
+    .pcard-label { font-size: 12px; font-weight: 600; color: var(--text-mid); }
+    .btn-copy {
+      background: #fff; border: 1px solid var(--border-h);
+      color: var(--text-mid); font-family: var(--sans);
+      font-size: 11px; font-weight: 600; padding: 4px 12px;
+      cursor: pointer; border-radius: 6px; transition: all 0.15s;
+    }
+    .btn-copy:hover { border-color: var(--accent); color: var(--accent-txt); }
+    .btn-copy.ok { border-color: var(--accent); color: var(--accent-txt); background: var(--accent-dim); }
+    .pcard-body {
+      padding: 20px; font-family: var(--mono); font-size: 12.5px;
+      color: var(--text); line-height: 2; white-space: pre-wrap; background: #fafafa;
+    }
+
+    /* ─── ACCORDION ─── */
+    .acc { display: flex; flex-direction: column; gap: 10px; }
+    .acc-item { border: 1px solid var(--border); border-radius: 12px; overflow: hidden; transition: border-color 0.15s; }
+    .acc-item.is-open { border-color: var(--border-h); }
+    .acc-btn {
+      width: 100%; background: var(--bg-soft); border: none;
+      padding: 16px 20px; display: flex; align-items: center;
+      gap: 12px; cursor: pointer; text-align: left;
+      font-family: var(--sans); border-bottom: 1px solid transparent;
+      transition: background 0.15s;
+    }
+    .acc-btn:hover { background: #f0f1f3; }
+    .acc-item.is-open .acc-btn { border-bottom-color: var(--border); background: #f0f1f3; }
+    .acc-ico { font-size: 16px; flex-shrink: 0; }
+    .acc-label { font-size: 14px; font-weight: 700; color: var(--text-dark); flex: 1; }
+    .acc-count { font-size: 11px; color: var(--text-mid); border: 1px solid var(--border-h); background: #fff; padding: 2px 8px; border-radius: 99px; }
+    .acc-arr { font-size: 11px; color: var(--text-light); transition: transform 0.22s ease; }
+    .acc-item.is-open .acc-arr { transform: rotate(90deg); }
+    .acc-body { overflow: hidden; max-height: 0; transition: max-height 0.3s ease; background: var(--bg-card); }
+    .acc-inner { padding: 20px; }
+
+    .tip-row {
+      display: flex; align-items: flex-start; gap: 14px;
+      margin-bottom: 16px; padding-bottom: 16px;
+      border-bottom: 1px solid var(--border);
+    }
+    .tip-row:last-child { margin-bottom: 0; padding-bottom: 0; border-bottom: none; }
+    .tip-tag {
+      flex-shrink: 0; font-size: 10px; font-weight: 700;
+      letter-spacing: 0.06em; padding: 3px 9px;
+      border-radius: 99px; margin-top: 2px;
+    }
+    .tip-tag.risk { background: rgba(220,38,38,0.08); color: #dc2626; border: 1px solid rgba(220,38,38,0.2); }
+    .tip-tag.fix  { background: rgba(22,163,74,0.08);  color: #16a34a; border: 1px solid rgba(22,163,74,0.2); }
+    .tip-block { flex: 1; }
+    .tip-name { font-size: 13px; font-weight: 700; color: var(--text-dark); margin-bottom: 5px; }
+    .tip-desc { font-size: 12px; color: var(--text-mid); line-height: 1.85; }
+
+    .acc-item[data-sev="red"]    .acc-btn { border-left: 3px solid var(--red); }
+    .acc-item[data-sev="orange"] .acc-btn { border-left: 3px solid var(--orange); }
+    .acc-item[data-sev="yellow"] .acc-btn { border-left: 3px solid var(--yellow); }
+
+    /* ─── FOOTER ─── */
+    footer {
+      border-top: 1px solid var(--border); padding: 28px 64px;
+      display: flex; align-items: center; justify-content: space-between;
+      background: var(--bg-soft);
+    }
+    .ft-l { font-size: 13px; color: var(--text-mid); }
+    .ft-l strong { color: var(--text-dark); }
+    .ft-r { font-size: 12px; color: var(--text-light); }
+
+    /* ─── RESPONSIVE ─── */
+    @media (max-width: 960px) {
+      .sidenav { display: none; }
+      main { margin-left: 0; }
+      .hero, .section { padding-left: 28px; padding-right: 28px; }
+      .cards { grid-template-columns: 1fr; }
+      .prompts { grid-template-columns: 1fr; }
+      footer { padding: 24px 28px; flex-direction: column; gap: 6px; text-align: center; }
+    }
+    @media (max-width: 640px) { h1 { font-size: 32px; } }
+  </style>
+</head>
+<body>
+
+<!-- ── TOP BAR ── -->
+<header class="topbar">
+  <div class="topbar-brand">
+    <span>AI 實務課程</span>
+    <span class="slash">/</span>
+    <span class="unit">用 AI 串接外部 API</span>
+  </div>
+  <span class="topbar-pill">下午場 · 13:30–16:30</span>
+  <div class="topbar-right">
+    <div class="live-dot"></div>
+    實戰演練
+  </div>
+</header>
+
+<!-- ── LAYOUT ── -->
+<div class="layout">
+
+  <!-- ── SIDEBAR ── -->
+  <nav class="sidenav">
+    <div class="nav-group-label">課程內容</div>
+    <a class="nav-link active" href="#hero" onclick="setActive(this)">
+      <span class="ni">🏠</span><span class="nl">單元介紹</span>
+    </a>
+    <a class="nav-link" href="#objectives" onclick="setActive(this)">
+      <span class="ni">🎯</span><span class="nl">學習目標</span>
+    </a>
+    <a class="nav-link" href="#steps" onclick="setActive(this)">
+      <span class="ni">📝</span><span class="nl">練習步驟</span>
+    </a>
+
+    <div class="nav-divider"></div>
+
+    <div class="nav-group-label">Prompt</div>
+    <a class="nav-link" href="#prompts" onclick="setActive(this)">
+      <span class="ni">💬</span><span class="nl">Prompt 範例</span>
+    </a>
+
+    <div class="nav-divider"></div>
+
+    <div class="nav-group-label">注意事項</div>
+    <a class="nav-link" href="#pitfalls" onclick="setActive(this)">
+      <span class="ni">🔴</span><span class="nl">CORS 錯誤</span>
+    </a>
+    <a class="nav-link" href="#pitfalls" onclick="setActive(this)">
+      <span class="ni">🟠</span><span class="nl">API Key 安全性</span>
+    </a>
+    <a class="nav-link" href="#pitfalls" onclick="setActive(this)">
+      <span class="ni">🟡</span><span class="nl">Race Condition</span>
+    </a>
+
+    <div class="nav-divider"></div>
+
+    <a href="demo/index.html" class="nav-demo-btn">
+      ▶ &nbsp;開啟 Demo App
+    </a>
+  </nav>
+
+  <!-- ── MAIN ── -->
+  <main>
+
+    <!-- HERO -->
+    <div class="hero" id="hero">
+      <div class="hero-eyebrow">
+        <div class="live-dot"></div>
+        Unit 04 &nbsp;·&nbsp; 實戰演練
+      </div>
+      <div class="hero-unit-label">// Afternoon Session — API Integration</div>
+      <h1>用 AI <em>串接外部 API</em></h1>
+      <p class="hero-sub">把 Mock Data 換成真實資料——呼叫營養成分 API、解析 JSON、處理 loading 與錯誤，完成完整的資料串接鏈。</p>
+      <div class="hero-tags">
+        <span class="htag">REST API</span>
+        <span class="htag">fetch + async/await</span>
+        <span class="htag">JSON 解析</span>
+        <span class="htag">Error Handling</span>
+        <span class="htag">Open Food Facts</span>
+      </div>
+    </div>
+
+    <!-- 01 OBJECTIVES -->
+    <div class="section" id="objectives">
+      <div class="sec-header">
+        <div class="sec-icon">🎯</div>
+        <h2 class="sec-t">學習目標</h2>
+        <span class="sec-sub">// learning objectives</span>
+      </div>
+      <div class="cards">
+        <div class="card">
+          <div class="c-num">01</div>
+          <span class="c-icon">🔌</span>
+          <div class="c-title">理解 API 請求/回應結構</div>
+          <div class="c-desc">認識端點 URL、HTTP 方法、Query String 與 JSON 回傳格式，建立與後端服務溝通的完整心智模型。</div>
+        </div>
+        <div class="card">
+          <div class="c-num">02</div>
+          <span class="c-icon">⚡</span>
+          <div class="c-title">用 fetch + async/await 呼叫 API</div>
+          <div class="c-desc">從 Mock Data 進化到真實請求：用現代非同步語法呼叫外部服務，並正確解析 JSON 回傳值。</div>
+        </div>
+        <div class="card">
+          <div class="c-num">03</div>
+          <span class="c-icon">🛡️</span>
+          <div class="c-title">處理 Loading、錯誤與邊界條件</div>
+          <div class="c-desc">讓 App 在 API 緩慢、回傳空資料或發生錯誤時，也能給出清晰的使用者反饋，而不是靜默失敗。</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 02 STEPS -->
+    <div class="section" id="steps">
+      <div class="sec-header">
+        <div class="sec-icon">📝</div>
+        <h2 class="sec-t">練習步驟</h2>
+        <span class="sec-sub">// follow these steps</span>
+      </div>
+      <div class="steps">
+
+        <div class="step">
+          <div class="step-n">01</div>
+          <div class="step-body">
+            <div class="step-title">
+              認識目標 API 端點
+              <span class="badge">START HERE</span>
+            </div>
+            <div class="step-desc">
+              本次使用 <strong>Open Food Facts API</strong>——完全免費、不需要 API Key、支援瀏覽器直接呼叫（CORS）。<br>
+              試著在瀏覽器打開下方 URL，觀察回傳的 JSON 結構，找到 <code>products</code> 陣列和 <code>nutriments</code> 欄位。
+            </div>
+            <div class="url-block">
+              <a href="https://world.openfoodfacts.org/cgi/search.pl?search_terms=apple&json=1&page_size=3" target="_blank">
+                https://world.openfoodfacts.org/cgi/search.pl?<br>
+                &nbsp;&nbsp;search_terms=<strong>apple</strong>&amp;json=1&amp;page_size=3
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-n">02</div>
+          <div class="step-body">
+            <div class="step-title">
+              用 AI 生成 fetch 呼叫程式碼
+              <span class="badge-time">10 分鐘</span>
+            </div>
+            <div class="step-desc">
+              參考下方「<strong>Prompt 1</strong>」，告訴 AI：API 端點格式、你想取得的欄位、以及要用 <code>async/await</code> 的非同步風格。<br>
+              目標：產出一個 <code>searchFood(query)</code> 函式，回傳解析後的食物清單。
+            </div>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-n">03</div>
+          <div class="step-body">
+            <div class="step-title">
+              解析 JSON 並渲染到畫面
+              <span class="badge-time">15 分鐘</span>
+            </div>
+            <div class="step-desc">
+              參考下方「<strong>Prompt 2</strong>」，請 AI 幫你把回傳的食物清單渲染成卡片，顯示：<br>
+              <code>食物名稱</code> &nbsp;·&nbsp; <code>熱量（kcal/100g）</code> &nbsp;·&nbsp; <code>蛋白質</code> &nbsp;·&nbsp; <code>碳水</code> &nbsp;·&nbsp; <code>脂肪</code>
+            </div>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-n">04</div>
+          <div class="step-body">
+            <div class="step-title">
+              加上 Loading 狀態與 Error 處理
+              <span class="badge-time">10 分鐘</span>
+            </div>
+            <div class="step-desc">
+              在 <code>fetch</code> 開始前顯示 loading，完成後隱藏。<br>
+              用 <code>try/catch</code> 捕捉網路錯誤；處理「查無結果」的空陣列情境。<br>
+              不能讓使用者對著空白畫面猜測發生了什麼事。
+            </div>
+            <div class="flow">
+              <div class="flow-node">🔍 發出請求</div>
+              <div class="flow-arrow">→</div>
+              <div class="flow-node">⏳ Loading</div>
+              <div class="flow-arrow">→</div>
+              <div class="flow-node">✅ 渲染結果</div>
+              <div class="flow-arrow">or</div>
+              <div class="flow-node">❌ 顯示錯誤</div>
+              <div class="flow-arrow">or</div>
+              <div class="flow-node">🔲 查無結果</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-n">05</div>
+          <div class="step-body">
+            <div class="step-title">延伸挑戰：整合進卡路里 Dashboard</div>
+            <div class="step-desc">
+              點擊食物卡片的「加入紀錄」，把真實 API 資料 push 進上一個單元的 <code>todayLog</code>。<br>
+              完成後你就串起了完整的功能鏈：<strong>搜尋 → 真實 API 資料 → 紀錄 → 熱量計算</strong>。<br>
+              Mock Data 的時代結束了。
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- 03 PROMPTS -->
+    <div class="section" id="prompts">
+      <div class="sec-header">
+        <div class="sec-icon">💬</div>
+        <h2 class="sec-t">Prompt 範例</h2>
+        <span class="sec-sub">// copy & paste into Claude</span>
+      </div>
+      <div class="prompts">
+
+        <div class="pcard">
+          <div class="pcard-head">
+            <div class="pcard-dots"><div class="pdot"></div><div class="pdot"></div><div class="pdot"></div></div>
+            <span class="pcard-label">Prompt 1 — 生成 API 呼叫程式碼</span>
+            <button class="btn-copy" onclick="cp(this,'p1')">複製</button>
+          </div>
+          <div class="pcard-body" id="p1">我要用原生 JavaScript 的 fetch 呼叫以下 API：
+
+API 端點：
+https://world.openfoodfacts.org/cgi/search.pl
+
+請求方式：GET
+必要參數（Query String）：
+- search_terms: 使用者輸入的食物名稱
+- json: 1（回傳 JSON 格式）
+- page_size: 5（最多 5 筆結果）
+
+回傳 JSON 的關鍵結構如下：
+{
+  "products": [
+    {
+      "product_name": "Chicken Breast",
+      "nutriments": {
+        "energy-kcal_100g": 165,
+        "proteins_100g": 31,
+        "carbohydrates_100g": 0,
+        "fat_100g": 3.6
+      }
+    }
+  ]
+}
+
+請幫我：
+1. 撰寫一個 async function searchFood(query)，
+   呼叫此 API 並回傳解析後的食物清單陣列。
+2. 每筆資料只保留：name、kcal、protein、carbs、fat
+   （注意某些欄位可能是 undefined，請給預設值 0）。
+3. 加上 try/catch 錯誤處理，錯誤時 throw 讓呼叫方處理。</div>
+        </div>
+
+        <div class="pcard">
+          <div class="pcard-head">
+            <div class="pcard-dots"><div class="pdot"></div><div class="pdot"></div><div class="pdot"></div></div>
+            <span class="pcard-label">Prompt 2 — 渲染結果 + 完整狀態處理</span>
+            <button class="btn-copy" onclick="cp(this,'p2')">複製</button>
+          </div>
+          <div class="pcard-body" id="p2">基於剛才的 searchFood() 函式，請幫我撰寫完整的
+搜尋互動功能：
+
+1. handleSearch() 函式：
+   - 取得輸入框的 query 字串
+   - 在呼叫 API 前顯示 loading 狀態
+   - 呼叫 searchFood(query)
+   - 成功：呼叫 renderResults(foods)
+   - 失敗：顯示錯誤訊息「API 呼叫失敗，請稍後再試」
+
+2. renderResults(foods) 函式：
+   - foods 為空時：顯示「查無結果，請嘗試其他關鍵字」
+   - foods 有資料時：渲染成卡片列表，每張卡片顯示：
+     食物名稱、熱量(kcal/100g)、蛋白質(g)、碳水(g)、脂肪(g)
+   - 每張卡片有一個「加入紀錄」按鈕
+
+3. 防止 Race Condition：
+   若使用者快速點擊搜尋，請使用 AbortController 取消
+   上一個未完成的請求，避免舊結果覆蓋新結果。
+
+請使用 async/await 語法，不要用 .then() 鏈。</div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- 04 PITFALLS ACCORDION -->
+    <div class="section" id="pitfalls">
+      <div class="sec-header">
+        <div class="sec-icon">⚠️</div>
+        <h2 class="sec-t">注意事項：API 串接的三大陷阱</h2>
+        <span class="sec-sub">// expand for details</span>
+      </div>
+      <div class="acc">
+
+        <div class="acc-item" id="acc-1" data-sev="red">
+          <button class="acc-btn" onclick="toggleAcc('acc-1')">
+            <span class="acc-ico">🔴</span>
+            <span class="acc-label">CORS 錯誤：API 不允許瀏覽器直接呼叫</span>
+            <span class="acc-count">最常踩</span>
+            <span class="acc-arr">▶</span>
+          </button>
+          <div class="acc-body"><div class="acc-inner">
+            <div class="tip-row">
+              <span class="tip-tag risk">風險</span>
+              <div class="tip-block">
+                <div class="tip-name">瀏覽器的 Same-Origin Policy 會阻擋跨域請求</div>
+                <div class="tip-desc">
+                  若第三方 API 沒有設定 <code>Access-Control-Allow-Origin: *</code>，瀏覽器就會拒絕請求並拋出 CORS 錯誤。<br>
+                  這個錯誤<strong>不是你的程式碼壞了</strong>，是瀏覽器的安全機制阻擋了你。
+                </div>
+              </div>
+            </div>
+            <div class="tip-row">
+              <span class="tip-tag fix">解法</span>
+              <div class="tip-block">
+                <div class="tip-name">選支援 CORS 的 API，或透過自己的後端代理</div>
+                <div class="tip-desc">
+                  · <strong>短期</strong>：選擇明確支援 CORS 的 API（如 Open Food Facts、JSONPlaceholder）<br>
+                  · <strong>長期</strong>：在自己的 Node.js 後端建立代理路由，前端只呼叫自己的後端，由後端轉發 API 請求<br>
+                  · CORS 是後端設定的，前端無法自行解決
+                </div>
+              </div>
+            </div>
+          </div></div>
+        </div>
+
+        <div class="acc-item" id="acc-2" data-sev="orange">
+          <button class="acc-btn" onclick="toggleAcc('acc-2')">
+            <span class="acc-ico">🟠</span>
+            <span class="acc-label">API Key 安全性：不應寫在前端程式碼中</span>
+            <span class="acc-count">安全風險</span>
+            <span class="acc-arr">▶</span>
+          </button>
+          <div class="acc-body"><div class="acc-inner">
+            <div class="tip-row">
+              <span class="tip-tag risk">風險</span>
+              <div class="tip-block">
+                <div class="tip-name">API Key 寫在 JS 裡，任何人開 DevTools 都能看到</div>
+                <div class="tip-desc">
+                  把 API Key 直接寫在前端 JS 裡（如 <code>const apiKey = 'sk-abc123...'</code>），任何人按下 F12 就能取得你的 Key，並用它無限呼叫 API 消耗你的配額或費用。
+                </div>
+              </div>
+            </div>
+            <div class="tip-row">
+              <span class="tip-tag fix">解法</span>
+              <div class="tip-block">
+                <div class="tip-name">API Key 放後端，前端只呼叫自己的後端</div>
+                <div class="tip-desc">
+                  · API Key 存在後端的環境變數（<code>.env</code>）中<br>
+                  · 前端只呼叫 <code>/api/search?q=apple</code>（自己的後端）<br>
+                  · 後端帶著 Key 去呼叫真實的第三方 API，再回傳結果<br>
+                  · 這樣前端永遠不會看到 Key
+                </div>
+              </div>
+            </div>
+          </div></div>
+        </div>
+
+        <div class="acc-item" id="acc-3" data-sev="yellow">
+          <button class="acc-btn" onclick="toggleAcc('acc-3')">
+            <span class="acc-ico">🟡</span>
+            <span class="acc-label">Race Condition：舊請求的結果覆蓋新結果</span>
+            <span class="acc-count">難發現</span>
+            <span class="acc-arr">▶</span>
+          </button>
+          <div class="acc-body"><div class="acc-inner">
+            <div class="tip-row">
+              <span class="tip-tag risk">風險</span>
+              <div class="tip-block">
+                <div class="tip-name">使用者快速搜尋時，先發出的請求可能更晚回應</div>
+                <div class="tip-desc">
+                  使用者輸入「chicken」，請求 A 發出；馬上改成「beef」，請求 B 發出。<br>
+                  若請求 A 因為某些原因比請求 B 晚回來，畫面就會顯示「chicken」的結果，但搜尋框顯示的是「beef」。
+                </div>
+              </div>
+            </div>
+            <div class="tip-row">
+              <span class="tip-tag fix">解法</span>
+              <div class="tip-block">
+                <div class="tip-name">用 AbortController 取消舊請求，或用 debounce 延遲觸發</div>
+                <div class="tip-desc">
+                  · <strong>AbortController</strong>：每次發新請求前，先 <code>abort()</code> 上一個未完成的請求<br>
+                  · <strong>debounce</strong>：使用者停止輸入 300ms 後才觸發搜尋，減少請求數量<br>
+                  · 兩者可以同時使用以獲得最佳效果
+                </div>
+              </div>
+            </div>
+          </div></div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- FOOTER -->
+    <footer>
+      <div class="ft-l"><strong>AI 實務課程</strong> &nbsp;·&nbsp; 生成式 AI 基礎介紹 &nbsp;·&nbsp; 下午場 Unit 04</div>
+      <div class="ft-r">© 2025 &nbsp;·&nbsp; Open Food Facts API 供學員實作練習使用</div>
+    </footer>
+
+  </main>
+</div>
+
+<script>
+  function toggleAcc(id) {
+    const item = document.getElementById(id);
+    const body = item.querySelector('.acc-body');
+    const isOpen = item.classList.contains('is-open');
+    document.querySelectorAll('.acc-item').forEach(el => {
+      el.classList.remove('is-open');
+      el.querySelector('.acc-body').style.maxHeight = '0';
+    });
+    if (!isOpen) {
+      item.classList.add('is-open');
+      body.style.maxHeight = body.scrollHeight + 'px';
+    }
+  }
+
+  function cp(btn, id) {
+    const text = document.getElementById(id).innerText;
+    const write = () => {
+      btn.textContent = '已複製 ✓'; btn.classList.add('ok');
+      setTimeout(() => { btn.textContent = '複製'; btn.classList.remove('ok'); }, 2000);
+    };
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(text).then(write);
+    } else {
+      const ta = document.createElement('textarea');
+      ta.value = text; document.body.appendChild(ta);
+      ta.select(); document.execCommand('copy');
+      document.body.removeChild(ta); write();
+    }
+  }
+
+  function setActive(el) {
+    document.querySelectorAll('.nav-link').forEach(a => a.classList.remove('active'));
+    el.classList.add('active');
+  }
+
+  const sections = ['hero','objectives','steps','prompts','pitfalls'];
+  const links = document.querySelectorAll('.sidenav .nav-link');
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const id = entry.target.id;
+        links.forEach(l => {
+          if (l.getAttribute('href') === '#' + id) {
+            links.forEach(x => x.classList.remove('active'));
+            l.classList.add('active');
+          }
+        });
+      }
+    });
+  }, { rootMargin: '-30% 0px -60% 0px' });
+  sections.forEach(id => { const el = document.getElementById(id); if (el) observer.observe(el); });
+</script>
+</body>
+</html>

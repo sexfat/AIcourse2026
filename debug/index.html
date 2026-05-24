@@ -1,0 +1,1096 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>用 AI Debug｜AI 實務課程</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:         #ffffff;
+      --bg-soft:    #f7f8fa;
+      --bg-card:    #ffffff;
+      --border:     #e5e7eb;
+      --border-h:   #d1d5db;
+      --accent:     #16a34a;
+      --accent-dim: rgba(22,163,74,0.08);
+      --accent-mid: rgba(22,163,74,0.18);
+      --accent-txt: #15803d;
+      --blue:       #2563eb;
+      --blue-dim:   rgba(37,99,235,0.07);
+      --orange:     #ea580c;
+      --orange-dim: rgba(234,88,12,0.08);
+      --red:        #dc2626;
+      --red-dim:    rgba(220,38,38,0.07);
+      --yellow:     #d97706;
+      --yellow-dim: rgba(217,119,6,0.08);
+      --text:       #374151;
+      --text-dark:  #111827;
+      --text-mid:   #6b7280;
+      --text-light: #9ca3af;
+      --sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+      --mono: 'SF Mono', 'Fira Code', 'Cascadia Code', 'Consolas', 'Courier New', monospace;
+      --nav-w: 220px;
+      --top-h: 56px;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+      font-size: 15px;
+      line-height: 1.65;
+    }
+
+    /* ─── TOP BAR ─── */
+    .topbar {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      height: var(--top-h);
+      background: #fff;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      padding: 0 24px;
+      z-index: 200;
+    }
+
+    .topbar-brand {
+      font-family: var(--mono);
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-dark);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .topbar-brand .slash { color: var(--text-light); font-weight: 400; }
+    .topbar-brand .unit  { color: var(--accent-txt); }
+
+    .topbar-pill {
+      margin-left: 16px;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      padding: 3px 10px;
+      border-radius: 99px;
+      background: var(--accent-dim);
+      color: var(--accent-txt);
+      border: 1px solid rgba(22,163,74,0.2);
+    }
+
+    .topbar-right {
+      margin-left: auto;
+      font-size: 12px;
+      color: var(--text-light);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .live-dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: var(--accent);
+      animation: pulse 2s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%,100% { opacity: 1; transform: scale(1); }
+      50%      { opacity: 0.4; transform: scale(0.8); }
+    }
+
+    /* ─── LAYOUT ─── */
+    .layout {
+      display: flex;
+      padding-top: var(--top-h);
+      min-height: 100vh;
+    }
+
+    /* ─── SIDEBAR NAV ─── */
+    .sidenav {
+      position: fixed;
+      top: var(--top-h);
+      left: 0;
+      width: var(--nav-w);
+      height: calc(100vh - var(--top-h));
+      background: var(--bg-soft);
+      border-right: 1px solid var(--border);
+      overflow-y: auto;
+      padding: 24px 0;
+      z-index: 100;
+    }
+
+    .nav-group-label {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--text-light);
+      padding: 0 20px;
+      margin-bottom: 6px;
+      margin-top: 20px;
+    }
+    .nav-group-label:first-child { margin-top: 0; }
+
+    .nav-link {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 20px;
+      font-size: 13px;
+      color: var(--text-mid);
+      text-decoration: none;
+      border-left: 2px solid transparent;
+      transition: all 0.15s;
+      cursor: pointer;
+    }
+    .nav-link:hover {
+      background: rgba(0,0,0,0.04);
+      color: var(--text-dark);
+    }
+    .nav-link.active {
+      color: var(--accent-txt);
+      border-left-color: var(--accent);
+      background: var(--accent-dim);
+      font-weight: 600;
+    }
+    .nav-link .ni { font-size: 14px; flex-shrink: 0; }
+    .nav-link .nl { flex: 1; }
+    .nav-link .nc {
+      font-size: 10px;
+      color: var(--text-light);
+      background: var(--border);
+      padding: 1px 6px;
+      border-radius: 99px;
+    }
+
+    .nav-divider {
+      height: 1px;
+      background: var(--border);
+      margin: 16px 20px;
+    }
+
+    .nav-dl-btn {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 12px 16px 0;
+      padding: 10px 16px;
+      background: var(--accent);
+      color: #fff;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 700;
+      text-decoration: none;
+      transition: opacity 0.15s, transform 0.1s;
+    }
+    .nav-dl-btn:hover { opacity: 0.88; transform: translateY(-1px); }
+
+    /* ─── MAIN CONTENT ─── */
+    main {
+      margin-left: var(--nav-w);
+      flex: 1;
+      min-width: 0;
+    }
+
+    /* ─── HERO ─── */
+    .hero {
+      padding: 64px 64px 56px;
+      border-bottom: 1px solid var(--border);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: -80px; right: -80px;
+      width: 400px; height: 400px;
+      background: radial-gradient(circle, rgba(22,163,74,0.06) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .hero-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--accent-txt);
+      background: var(--accent-dim);
+      border: 1px solid rgba(22,163,74,0.2);
+      padding: 4px 12px;
+      border-radius: 99px;
+      margin-bottom: 24px;
+      letter-spacing: 0.04em;
+    }
+
+    .hero-unit-label {
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--text-light);
+      margin-bottom: 10px;
+    }
+
+    h1 {
+      font-size: clamp(36px, 5vw, 58px);
+      font-weight: 800;
+      color: var(--text-dark);
+      line-height: 1.1;
+      letter-spacing: -0.025em;
+      margin-bottom: 16px;
+    }
+    h1 em {
+      font-style: normal;
+      color: var(--accent-txt);
+    }
+
+    .hero-sub {
+      font-size: 17px;
+      color: var(--text-mid);
+      max-width: 520px;
+      margin-bottom: 32px;
+    }
+
+    .hero-tags {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .htag {
+      font-size: 12px;
+      color: var(--text-mid);
+      border: 1px solid var(--border-h);
+      padding: 4px 12px;
+      border-radius: 99px;
+      background: var(--bg-soft);
+    }
+
+    /* ─── SECTION ─── */
+    .section {
+      padding: 56px 64px;
+      border-bottom: 1px solid var(--border);
+      scroll-margin-top: calc(var(--top-h) + 16px);
+    }
+
+    .sec-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 32px;
+    }
+    .sec-icon {
+      width: 36px; height: 36px;
+      border-radius: 8px;
+      background: var(--accent-dim);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px;
+      flex-shrink: 0;
+    }
+    .sec-t {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--text-dark);
+      letter-spacing: -0.01em;
+    }
+    .sec-sub {
+      font-size: 13px;
+      color: var(--text-light);
+      font-family: var(--mono);
+      margin-left: auto;
+    }
+
+    /* ─── OBJECTIVE CARDS ─── */
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px;
+      transition: border-color 0.15s, box-shadow 0.15s, transform 0.15s;
+    }
+    .card:hover {
+      border-color: var(--border-h);
+      box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+      transform: translateY(-2px);
+    }
+    .c-num {
+      font-family: var(--mono);
+      font-size: 10px;
+      color: var(--text-light);
+      margin-bottom: 14px;
+    }
+    .c-icon { font-size: 26px; margin-bottom: 12px; display: block; }
+    .c-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-dark);
+      margin-bottom: 8px;
+    }
+    .c-desc {
+      font-size: 13px;
+      color: var(--text-mid);
+      line-height: 1.75;
+    }
+
+    /* ─── STEPS ─── */
+    .steps { display: flex; flex-direction: column; gap: 12px; }
+
+    .step {
+      display: flex;
+      gap: 0;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    .step:hover {
+      border-color: var(--border-h);
+      box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+    }
+
+    .step-n {
+      min-width: 56px;
+      background: var(--bg-soft);
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding-top: 22px;
+      border-right: 1px solid var(--border);
+      font-family: var(--mono);
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--accent-txt);
+    }
+
+    .step-body { padding: 20px 24px; flex: 1; }
+
+    .step-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-dark);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 6px;
+    }
+    .badge {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      padding: 2px 8px;
+      border-radius: 99px;
+      background: var(--accent-dim);
+      color: var(--accent-txt);
+      border: 1px solid rgba(22,163,74,0.2);
+    }
+    .step-desc {
+      font-size: 13px;
+      color: var(--text-mid);
+      line-height: 1.8;
+    }
+    .step-action { margin-top: 14px; }
+
+    .btn-dl {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 9px 18px;
+      background: var(--accent);
+      color: #fff;
+      font-family: var(--sans);
+      font-size: 13px;
+      font-weight: 700;
+      text-decoration: none;
+      border-radius: 8px;
+      transition: opacity 0.15s, transform 0.1s;
+    }
+    .btn-dl:hover { opacity: 0.87; transform: translateY(-1px); }
+
+    code {
+      font-family: var(--mono);
+      font-size: 12px;
+      background: var(--bg-soft);
+      border: 1px solid var(--border);
+      color: var(--accent-txt);
+      padding: 1px 6px;
+      border-radius: 4px;
+    }
+
+    /* ─── ACCORDION ─── */
+    .acc { display: flex; flex-direction: column; gap: 10px; }
+
+    .acc-item {
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+      transition: border-color 0.15s;
+    }
+    .acc-item.is-open { border-color: var(--border-h); }
+
+    .acc-btn {
+      width: 100%;
+      background: var(--bg-soft);
+      border: none;
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      cursor: pointer;
+      text-align: left;
+      font-family: var(--sans);
+      border-bottom: 1px solid transparent;
+      transition: background 0.15s;
+    }
+    .acc-btn:hover { background: #f0f1f3; }
+    .acc-item.is-open .acc-btn {
+      border-bottom-color: var(--border);
+      background: #f0f1f3;
+    }
+
+    .acc-ico { font-size: 16px; flex-shrink: 0; }
+    .acc-label { font-size: 14px; font-weight: 700; color: var(--text-dark); flex: 1; }
+    .acc-count {
+      font-size: 11px;
+      color: var(--text-mid);
+      border: 1px solid var(--border-h);
+      background: #fff;
+      padding: 2px 8px;
+      border-radius: 99px;
+    }
+    .acc-arr {
+      font-size: 11px;
+      color: var(--text-light);
+      transition: transform 0.22s ease;
+    }
+    .acc-item.is-open .acc-arr { transform: rotate(90deg); }
+
+    .acc-body {
+      overflow: hidden;
+      max-height: 0;
+      transition: max-height 0.3s ease;
+      background: var(--bg-card);
+    }
+    .acc-inner { padding: 20px; }
+
+    .sev-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      margin-bottom: 16px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--border);
+    }
+    .sev-row:last-child { margin-bottom: 0; padding-bottom: 0; border-bottom: none; }
+    .sev-num {
+      min-width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background: var(--bg-soft);
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-mid);
+      flex-shrink: 0;
+    }
+    .sev-name {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-dark);
+      margin-bottom: 4px;
+    }
+    .sev-desc {
+      font-size: 12px;
+      color: var(--text-mid);
+      line-height: 1.8;
+    }
+
+    /* severity stripe */
+    .acc-item[data-sev="red"]    .acc-btn { border-left: 3px solid var(--red); }
+    .acc-item[data-sev="yellow"] .acc-btn { border-left: 3px solid var(--yellow); }
+    .acc-item[data-sev="orange"] .acc-btn { border-left: 3px solid var(--orange); }
+
+    /* ─── PROMPTS ─── */
+    .prompts { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+    .pcard {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .pcard-head {
+      padding: 12px 16px;
+      background: var(--bg-soft);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .pcard-dots { display: flex; gap: 5px; }
+    .pdot {
+      width: 10px; height: 10px; border-radius: 50%;
+      background: var(--border-h);
+    }
+    .pcard-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-mid);
+    }
+    .btn-copy {
+      background: #fff;
+      border: 1px solid var(--border-h);
+      color: var(--text-mid);
+      font-family: var(--sans);
+      font-size: 11px;
+      font-weight: 600;
+      padding: 4px 12px;
+      cursor: pointer;
+      border-radius: 6px;
+      transition: all 0.15s;
+    }
+    .btn-copy:hover { border-color: var(--accent); color: var(--accent-txt); }
+    .btn-copy.ok {
+      border-color: var(--accent);
+      color: var(--accent-txt);
+      background: var(--accent-dim);
+    }
+
+    .pcard-body {
+      padding: 20px;
+      font-family: var(--mono);
+      font-size: 12.5px;
+      color: var(--text);
+      line-height: 2;
+      white-space: pre-wrap;
+      background: #fafafa;
+    }
+
+    /* ─── FOOTER ─── */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 28px 64px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--bg-soft);
+    }
+    .ft-l { font-size: 13px; color: var(--text-mid); }
+    .ft-l strong { color: var(--text-dark); }
+    .ft-r { font-size: 12px; color: var(--text-light); }
+
+    /* ─── RESPONSIVE ─── */
+    @media (max-width: 960px) {
+      .sidenav { display: none; }
+      main { margin-left: 0; }
+      .hero, .section { padding-left: 28px; padding-right: 28px; }
+      .cards { grid-template-columns: 1fr; }
+      .prompts { grid-template-columns: 1fr; }
+      footer { padding: 24px 28px; flex-direction: column; gap: 6px; text-align: center; }
+    }
+    @media (max-width: 640px) {
+      h1 { font-size: 32px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── TOP BAR ── -->
+<header class="topbar">
+  <div class="topbar-brand">
+    <span>AI 實務課程</span>
+    <span class="slash">/</span>
+    <span class="unit">用 AI Debug</span>
+  </div>
+  <span class="topbar-pill">下午場 · 13:30–16:30</span>
+  <div class="topbar-right">
+    <div class="live-dot"></div>
+    實戰演練
+  </div>
+</header>
+
+<!-- ── LAYOUT ── -->
+<div class="layout">
+
+  <!-- ── SIDEBAR ── -->
+  <nav class="sidenav">
+    <div class="nav-group-label">課程內容</div>
+    <a class="nav-link active" href="#hero" onclick="setActive(this)">
+      <span class="ni">🏠</span>
+      <span class="nl">單元介紹</span>
+    </a>
+    <a class="nav-link" href="#objectives" onclick="setActive(this)">
+      <span class="ni">🎯</span>
+      <span class="nl">學習目標</span>
+    </a>
+    <a class="nav-link" href="#steps" onclick="setActive(this)">
+      <span class="ni">📝</span>
+      <span class="nl">練習步驟</span>
+    </a>
+
+    <div class="nav-divider"></div>
+
+    <div class="nav-group-label">Prompt</div>
+    <a class="nav-link" href="#prompts" onclick="setActive(this)">
+      <span class="ni">💬</span>
+      <span class="nl">Prompt 範例</span>
+    </a>
+
+    <div class="nav-divider"></div>
+
+    <div class="nav-group-label">找問題</div>
+    <a class="nav-link" href="#bugs" onclick="setActive(this)">
+      <span class="ni">🔴</span>
+      <span class="nl">安全漏洞</span>
+      <span class="nc">2</span>
+    </a>
+    <a class="nav-link" href="#bugs" onclick="setActive(this)">
+      <span class="ni">🟡</span>
+      <span class="nl">程式碼品質</span>
+      <span class="nc">3</span>
+    </a>
+    <a class="nav-link" href="#bugs" onclick="setActive(this)">
+      <span class="ni">🟡</span>
+      <span class="nl">命名不一致</span>
+      <span class="nc">5</span>
+    </a>
+    <a class="nav-link" href="#bugs" onclick="setActive(this)">
+      <span class="ni">🟠</span>
+      <span class="nl">邏輯錯誤</span>
+      <span class="nc">4</span>
+    </a>
+
+    <div class="nav-divider"></div>
+
+    <a href="#" class="nav-dl-btn">
+      ↓ &nbsp;下載 todo-app.zip
+    </a>
+  </nav>
+
+  <!-- ── MAIN ── -->
+  <main>
+
+    <!-- HERO -->
+    <div class="hero" id="hero">
+      <div class="hero-eyebrow">
+        <div class="live-dot"></div>
+        Unit 02 &nbsp;·&nbsp; 實戰演練
+      </div>
+      <div class="hero-unit-label">// Afternoon Session — AI-Assisted Debugging</div>
+      <h1>用 AI <em>Debug</em></h1>
+      <p class="hero-sub">快速讀懂陌生程式碼、找出技術債與安全漏洞，再請 AI 產出改善版本。</p>
+      <div class="hero-tags">
+        <span class="htag">Node.js + Express</span>
+        <span class="htag">程式碼審查</span>
+        <span class="htag">SQL Injection</span>
+        <span class="htag">Claude / Codex</span>
+        <span class="htag">Prompt Engineering</span>
+      </div>
+    </div>
+
+    <!-- 01 OBJECTIVES -->
+    <div class="section" id="objectives">
+      <div class="sec-header">
+        <div class="sec-icon">🎯</div>
+        <h2 class="sec-t">學習目標</h2>
+        <span class="sec-sub">// learning objectives</span>
+      </div>
+      <div class="cards">
+        <div class="card">
+          <div class="c-num">01</div>
+          <span class="c-icon">🗺️</span>
+          <div class="c-title">快速理解陌生專案架構</div>
+          <div class="c-desc">在不熟悉專案的情況下，利用 AI 在幾分鐘內掌握程式架構、API 路由與完整資料流向。</div>
+        </div>
+        <div class="card">
+          <div class="c-num">02</div>
+          <span class="c-icon">🔍</span>
+          <div class="c-title">用 AI 找出技術債與安全漏洞</div>
+          <div class="c-desc">系統性地審查程式碼，找出 SQL Injection、命名不一致、過期寫法等常見問題。</div>
+        </div>
+        <div class="card">
+          <div class="c-num">03</div>
+          <span class="c-icon">📋</span>
+          <div class="c-title">整理報告 + 產出改善程式碼</div>
+          <div class="c-desc">將 AI 分析結果整理成結構化問題報告，並請 AI 提供具體改善後的程式碼。</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 02 STEPS -->
+    <div class="section" id="steps">
+      <div class="sec-header">
+        <div class="sec-icon">📝</div>
+        <h2 class="sec-t">練習步驟</h2>
+        <span class="sec-sub">// follow these steps</span>
+      </div>
+      <div class="steps">
+
+        <div class="step">
+          <div class="step-n">01</div>
+          <div class="step-body">
+            <div class="step-title">
+              下載範例專案
+              <span class="badge">START HERE</span>
+            </div>
+            <div class="step-desc">下載含有技術債的 Todo App 範例，包含 <code>server.js</code>、<code>app.js</code> 兩個核心檔案，這是你今天練習的目標程式碼。</div>
+            <div class="step-action">
+              <a href="#" class="btn-dl">↓ &nbsp;下載 todo-app.zip</a>
+            </div>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-n">02</div>
+          <div class="step-body">
+            <div class="step-title">用 AI 快速了解程式架構</div>
+            <div class="step-desc">
+              打開 <code>server.js</code> 與 <code>app.js</code>，將內容貼給 Claude / codex， 詢問架構、路由與資料流。<br>
+              參考下方「Prompt 1」。
+            </div>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-n">03</div>
+          <div class="step-body">
+            <div class="step-title">用 AI 找出所有問題點</div>
+            <div class="step-desc">
+              請 AI 系統性審查程式碼，找出技術債、命名問題、安全漏洞。<br>
+              參考下方「Prompt 2」。
+            </div>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-n">04</div>
+          <div class="step-body">
+            <div class="step-title">整理問題報告</div>
+            <div class="step-desc">
+              根據 AI 回覆，整理成結構化表格：<br>
+              <code>問題類別</code> &nbsp;·&nbsp; <code>問題描述</code> &nbsp;·&nbsp; <code>影響程度</code> &nbsp;·&nbsp; <code>改善建議</code>
+            </div>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-n">05</div>
+          <div class="step-body">
+            <div class="step-title">請 AI 提供改善後的程式碼</div>
+            <div class="step-desc">根據問題報告，請 AI 提供修正後的完整程式碼，並要求說明每個改動的原因與差異。</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- 03 PROMPTS -->
+    <div class="section" id="prompts">
+      <div class="sec-header">
+        <div class="sec-icon">💬</div>
+        <h2 class="sec-t">Prompt 範例</h2>
+        <span class="sec-sub">// copy & paste into Claude</span>
+      </div>
+      <div class="prompts">
+
+        <div class="pcard">
+          <div class="pcard-head">
+            <div class="pcard-dots">
+              <div class="pdot"></div>
+              <div class="pdot"></div>
+              <div class="pdot"></div>
+            </div>
+            <span class="pcard-label">Prompt 1 — 了解架構</span>
+            <button class="btn-copy" onclick="cp(this,'p1')">複製</button>
+          </div>
+          <div class="pcard-body" id="p1">以下是一個 Node.js + 原生 JS 的 Todo App。
+請幫我：
+
+1. 說明這個專案的架構與各檔案職責
+2. 列出所有 API 路由與功能
+3. 描述資料流（從前端 → 後端 → 資料庫）
+
+[貼上 server.js 和 app.js 的程式碼]</div>
+        </div>
+
+        <div class="pcard">
+          <div class="pcard-head">
+            <div class="pcard-dots">
+              <div class="pdot"></div>
+              <div class="pdot"></div>
+              <div class="pdot"></div>
+            </div>
+            <span class="pcard-label">Prompt 2 — 找問題</span>
+            <button class="btn-copy" onclick="cp(this,'p2')">複製</button>
+          </div>
+          <div class="pcard-body" id="p2">請仔細審查以下程式碼，找出所有問題，
+包括：
+
+- 安全漏洞（SQL Injection、硬編碼密鑰等）
+- 過時或不良的程式寫法
+- 命名不一致的地方
+- 未處理的錯誤
+- 重複或無用的程式碼
+
+請以表格方式整理，說明每個問題的
+影響程度（高/中/低）與改善建議。
+
+[貼上 server.js 和 app.js 的程式碼]</div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- 04 BUGS ACCORDION -->
+    <div class="section" id="bugs">
+      <div class="sec-header">
+        <div class="sec-icon">🐛</div>
+        <h2 class="sec-t">這個專案埋了什麼問題？</h2>
+        <span class="sec-sub">// expand to reveal answers</span>
+      </div>
+
+      <div class="acc">
+
+        <div class="acc-item" id="acc-1" data-sev="red">
+          <button class="acc-btn" onclick="toggleAcc('acc-1')">
+            <span class="acc-ico">🔴</span>
+            <span class="acc-label">安全漏洞</span>
+            <span class="acc-count">2 個</span>
+            <span class="acc-arr">▶</span>
+          </button>
+          <div class="acc-body">
+            <div class="acc-inner">
+              <div class="sev-row">
+                <div class="sev-num">1</div>
+                <div>
+                  <div class="sev-name">SQL Injection</div>
+                  <div class="sev-desc">直接用字串拼接組成 SQL 查詢，攻擊者可輸入惡意字串讀取或刪除全部資料。<br>應改用 <code>?</code> 佔位符的 Prepared Statement。</div>
+                </div>
+              </div>
+              <div class="sev-row">
+                <div class="sev-num">2</div>
+                <div>
+                  <div class="sev-name">硬編碼密鑰 + 測試路由洩漏</div>
+                  <div class="sev-desc"><code>SECRET_KEY = 'abc123password'</code> 寫死在程式碼中，且 <code>/test</code> 路由會直接將它回傳給任何人。<br>應改用 <code>process.env.SECRET_KEY</code> 並刪除測試路由。</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="acc-item" id="acc-2" data-sev="yellow">
+          <button class="acc-btn" onclick="toggleAcc('acc-2')">
+            <span class="acc-ico">🟡</span>
+            <span class="acc-label">程式碼品質（舊式寫法）</span>
+            <span class="acc-count">3 種</span>
+            <span class="acc-arr">▶</span>
+          </button>
+          <div class="acc-body">
+            <div class="acc-inner">
+              <div class="sev-row">
+                <div class="sev-num">1</div>
+                <div>
+                  <div class="sev-name">全面使用 var</div>
+                  <div class="sev-desc">應改用 <code>const</code>（不變）或 <code>let</code>（可變），避免無塊作用域導致的非預期行為。</div>
+                </div>
+              </div>
+              <div class="sev-row">
+                <div class="sev-num">2</div>
+                <div>
+                  <div class="sev-name">舊式 XMLHttpRequest</div>
+                  <div class="sev-desc">應改用現代 <code>fetch</code> API 搭配 <code>async/await</code>，程式碼更簡潔、可讀性更高。</div>
+                </div>
+              </div>
+              <div class="sev-row">
+                <div class="sev-num">3</div>
+                <div>
+                  <div class="sev-name">== 寬鬆比較</div>
+                  <div class="sev-desc">應統一改用 <code>===</code> 嚴格相等，避免非預期的型別自動轉換錯誤。</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="acc-item" id="acc-3" data-sev="yellow">
+          <button class="acc-btn" onclick="toggleAcc('acc-3')">
+            <span class="acc-ico">🟡</span>
+            <span class="acc-label">命名不一致</span>
+            <span class="acc-count">5 處</span>
+            <span class="acc-arr">▶</span>
+          </button>
+          <div class="acc-body">
+            <div class="acc-inner">
+              <div class="sev-row">
+                <div class="sev-num">1</div>
+                <div>
+                  <div class="sev-name">user_name &nbsp;vs&nbsp; UserName</div>
+                  <div class="sev-desc"><code>snake_case</code> 與 <code>PascalCase</code> 混用，代表同一個「使用者名稱」欄位。</div>
+                </div>
+              </div>
+              <div class="sev-row">
+                <div class="sev-num">2</div>
+                <div>
+                  <div class="sev-name">created_at &nbsp;vs&nbsp; createdAt</div>
+                  <div class="sev-desc"><code>snake_case</code> 與 <code>camelCase</code> 混用於同一個時間欄位。</div>
+                </div>
+              </div>
+              <div class="sev-row">
+                <div class="sev-num">3</div>
+                <div>
+                  <div class="sev-name">getUserData &nbsp;vs&nbsp; get_user_info</div>
+                  <div class="sev-desc">功能相同的兩個函式，命名風格截然不同，還伴隨重複程式碼問題。</div>
+                </div>
+              </div>
+              <div class="sev-row">
+                <div class="sev-num">4</div>
+                <div>
+                  <div class="sev-name">currentUser &nbsp;vs&nbsp; TodoList</div>
+                  <div class="sev-desc">全域變數一個用 <code>camelCase</code>，一個用 <code>PascalCase</code>，風格不一致。</div>
+                </div>
+              </div>
+              <div class="sev-row">
+                <div class="sev-num">5</div>
+                <div>
+                  <div class="sev-name">var &nbsp;/&nbsp; let 混用</div>
+                  <div class="sev-desc">同一個檔案中部分用 <code>var</code>、部分用 <code>let</code>，缺乏統一的 coding style。</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="acc-item" id="acc-4" data-sev="orange">
+          <button class="acc-btn" onclick="toggleAcc('acc-4')">
+            <span class="acc-ico">🟠</span>
+            <span class="acc-label">邏輯錯誤與 Dead Code</span>
+            <span class="acc-count">4 個</span>
+            <span class="acc-arr">▶</span>
+          </button>
+          <div class="acc-body">
+            <div class="acc-inner">
+              <div class="sev-row">
+                <div class="sev-num">1</div>
+                <div>
+                  <div class="sev-name">Closure 陷阱</div>
+                  <div class="sev-desc"><code>for + var</code> 搭配 closure，所有 checkbox 和刪除按鈕都只會操作最後一筆 todo。<br>應改用 <code>forEach</code> 或將 id 傳入屬性。</div>
+                </div>
+              </div>
+              <div class="sev-row">
+                <div class="sev-num">2</div>
+                <div>
+                  <div class="sev-name">錯誤未回傳給前端</div>
+                  <div class="sev-desc">多個 API 路由發生錯誤時只做 <code>console.log</code>，卻繼續回傳 <code>success: true</code>，前端無從得知操作失敗。</div>
+                </div>
+              </div>
+              <div class="sev-row">
+                <div class="sev-num">3</div>
+                <div>
+                  <div class="sev-name">Dead Code</div>
+                  <div class="sev-desc"><code>unusedConfig</code>、<code>formatDate()</code>、<code>format_date_string()</code> 宣告後從未被使用，增加維護負擔。</div>
+                </div>
+              </div>
+              <div class="sev-row">
+                <div class="sev-num">4</div>
+                <div>
+                  <div class="sev-name">Callback 內 return 無效</div>
+                  <div class="sev-desc"><code>get_user_info()</code> 在非同步 callback 裡 <code>return row</code>，這個值永遠無法被呼叫方取得。</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- FOOTER -->
+    <footer>
+      <div class="ft-l"><strong>AI 實務課程</strong> &nbsp;·&nbsp; 生成式 AI 基礎介紹 &nbsp;·&nbsp; 下午場 Unit 02</div>
+      <div class="ft-r">© 2025 &nbsp;·&nbsp; todo-app 範例專案供學員練習使用</div>
+    </footer>
+
+  </main>
+</div><!-- /layout -->
+
+<script>
+  /* ── Accordion ── */
+  function toggleAcc(id) {
+    const item = document.getElementById(id);
+    const body = item.querySelector('.acc-body');
+    const isOpen = item.classList.contains('is-open');
+
+    document.querySelectorAll('.acc-item').forEach(el => {
+      el.classList.remove('is-open');
+      el.querySelector('.acc-body').style.maxHeight = '0';
+    });
+
+    if (!isOpen) {
+      item.classList.add('is-open');
+      body.style.maxHeight = body.scrollHeight + 'px';
+    }
+  }
+
+  /* ── Copy prompt ── */
+  function cp(btn, id) {
+    const text = document.getElementById(id).innerText;
+    const write = () => {
+      btn.textContent = '已複製 ✓';
+      btn.classList.add('ok');
+      setTimeout(() => { btn.textContent = '複製'; btn.classList.remove('ok'); }, 2000);
+    };
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(text).then(write);
+    } else {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+      write();
+    }
+  }
+
+  /* ── Sidebar active link ── */
+  function setActive(el) {
+    document.querySelectorAll('.nav-link').forEach(a => a.classList.remove('active'));
+    el.classList.add('active');
+  }
+
+  /* ── Scroll spy ── */
+  const sections = ['hero','objectives','steps','bugs','prompts'];
+  const links = document.querySelectorAll('.sidenav .nav-link');
+
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const id = entry.target.id;
+        links.forEach(l => {
+          const href = l.getAttribute('href');
+          if (href === '#' + id) {
+            links.forEach(x => x.classList.remove('active'));
+            l.classList.add('active');
+          }
+        });
+      }
+    });
+  }, { rootMargin: '-30% 0px -60% 0px' });
+
+  sections.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) observer.observe(el);
+  });
+</script>
+</body>
+</html>
