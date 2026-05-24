@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Todo App</title>
+  <style>
+    body { font-family: Arial; padding: 20px; }
+    .todo-item { display: flex; align-items: center; margin: 8px 0; gap: 10px; }
+    .done { text-decoration: line-through; color: #999; }
+    button { cursor: pointer; }
+    #loginSection { margin-bottom: 20px; }
+  </style>
+</head>
+<body>
+  <div id="loginSection">
+    <h2>登入</h2>
+    <input type="text" id="usernameInput" placeholder="輸入使用者名稱">
+    <button onclick="login()">登入</button>
+  </div>
+
+  <div id="appSection" style="display:none">
+    <h2>Todo List - <span id="currentUser"></span></h2>
+    <div>
+      <input type="text" id="newTodo" placeholder="新增待辦事項">
+      <button onclick="addTodo()">新增</button>
+    </div>
+    <div id="todoList"></div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
