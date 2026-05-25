@@ -475,6 +475,7 @@
             <li><span>整理問題報告 & 改進建議</span></li>
             <li><span>請 AI 提供改善後的程式碼</span></li>
             <li><span>三個實作練習環節</span></li>
+            <li><span>SDD 規格驅動開發概念</span></li>
           </ul>
         </div>
       </div>
@@ -946,6 +947,44 @@
       <pre>推薦工作流：
 「先分析，不修改」→「提出方案」→「最小範圍實作」→「跑測試」→「總結 diff」</pre>
       <div class="notes">建議時間：5 分鐘</div>
+    </section>
+
+    <!-- ===== SLIDE SDD-1: SDD 概念 ===== -->
+    <section class="slide">
+      <div class="eyebrow">Spec-Driven Development</div>
+      <h2>SDD：先寫規格，再寫程式</h2>
+      <div class="compare">
+        <div class="box bad">
+          <span class="tag red">常見做法（方向容易錯）</span>
+          <h3>直接叫 AI 寫 code</h3>
+          <p>「幫我做一個購物車」→ AI 會做出一個購物車，但不一定是你要的那個。方向錯了要整個重來。</p>
+        </div>
+        <div class="box">
+          <span class="tag">SDD 做法</span>
+          <h3>spec → plan → tasks → code</h3>
+          <p>讓 AI 先把需求說清楚、找出模糊地帶，你確認後再動工。每個 task 都有驗收標準，可靠、可追蹤。</p>
+        </div>
+      </div>
+      <p>好的 spec 黃金守則：每條需求<strong>可測試、可驗證</strong>。「速度要快」→「首頁載入 &lt; 2 秒」。</p>
+      <div class="notes">建議時間：8 分鐘</div>
+    </section>
+
+    <!-- ===== SLIDE SDD-2: SDD 三文件流程 ===== -->
+    <section class="slide">
+      <div class="eyebrow">SDD 三文件流程</div>
+      <h2>spec.md → plan.md → tasks.md</h2>
+      <div class="flow flow-4" style="margin-top:24px">
+        <div class="step"><b>① 理解需求</b><span>摘要需求、找模糊地帶、提出澄清問題，不自行腦補</span></div>
+        <div class="step"><b>② spec.md</b><span>功能需求、In/Out scope、驗收標準（AC）、風險與未決事項</span></div>
+        <div class="step"><b>③ plan.md</b><span>系統架構、API contract、資料模型、技術取捨</span></div>
+        <div class="step"><b>④ tasks.md</b><span>可直接執行的任務清單，每個 task 有驗收條件與優先級</span></div>
+      </div>
+      <pre>實作守則：
+- 沒有 spec，不開始 coding
+- 沒有 acceptance criteria，不標示完成
+- API 採 design-first，先定 request/response/schema
+- 需求變更 → 先更新 spec → plan → tasks，不可直接改 code</pre>
+      <div class="notes">建議時間：7 分鐘</div>
     </section>
 
     <!-- ===== SLIDE 24: 常見錯誤 ===== -->

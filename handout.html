@@ -510,6 +510,7 @@
         <a href="#practice-debug">Debug 任務</a>
         <a href="#practice-ui">UI Design 任務</a>
         <a href="#practice-api">API Test 任務</a>
+        <a href="#sdd">Spec 規格驅動開發</a>
         <a href="#best-practices">協作心法</a>
         <a href="#prompt-template">Prompt 模板</a>
         <a href="#resources">課後資源</a>
@@ -1032,6 +1033,98 @@ JavaScript 邏輯先留白，我們稍後處理。</pre>
         <strong>重點：</strong>學習如何用 AI 處理 API 串接、錯誤處理、非同步邏輯，以及如何驗收 AI 產出的程式碼。<br>
         <strong>預計時間：</strong>30 分鐘
       </div>
+    </div>
+  </div>
+
+  <!-- SDD -->
+  <div class="article" id="sdd">
+    <div class="article-num">規格驅動</div>
+    <h3>SDD：先寫規格再寫程式——讓 AI 成為可靠的開發夥伴</h3>
+
+    <p><strong>Spec-Driven Development（SDD，規格驅動開發）</strong>的核心精神：不是直接叫 AI「寫 code」，而是要求它先把需求轉成規格文件、再做技術規劃、再拆任務，最後才實作。這樣做能大幅降低 AI 幻覺，並讓每個產出物都有可驗證的標準。</p>
+
+    <div class="info-box blue">
+      <strong>為什麼需要 SDD？</strong>直接叫 AI「幫我寫一個購物車功能」，它會做出「一個」購物車，但不一定是你要的那個。先寫 spec，讓 AI 把需求說清楚、找出模糊地帶，你確認後再動工，才不會浪費時間在錯誤的方向上。
+    </div>
+
+    <h4 style="font-size:16px;margin:18px 0 10px;font-weight:700;">三份核心文件：spec → plan → tasks</h4>
+    <div class="flow flow-3">
+      <div class="step"><b>spec.md</b><span>需求、功能範圍、驗收標準——搞清楚「要做什麼」</span></div>
+      <div class="step"><b>plan.md</b><span>系統架構、API 合約、技術取捨——搞清楚「怎麼做」</span></div>
+      <div class="step"><b>tasks.md</b><span>可執行任務清單，每個 task 有驗收條件，可直接交給 coding agent</span></div>
+    </div>
+
+    <h4 style="font-size:16px;margin:18px 0 10px;font-weight:700;">spec.md 必備欄位</h4>
+    <div class="compare">
+      <div class="card teal">
+        <div class="card-label">需求面</div>
+        <ul class="bullet-list" style="margin:0">
+          <li>背景與目標</li>
+          <li>問題定義</li>
+          <li>In scope / Out of scope</li>
+          <li>使用者角色</li>
+          <li>使用情境 / user flow</li>
+          <li>功能需求（每條需可測試）</li>
+          <li>非功能需求</li>
+        </ul>
+      </div>
+      <div class="card blue">
+        <div class="card-label">驗收面</div>
+        <ul class="bullet-list" style="margin:0">
+          <li>資料需求</li>
+          <li>API / integration 需求</li>
+          <li>權限與安全需求</li>
+          <li><strong>驗收標準（Acceptance Criteria）</strong></li>
+          <li>風險與未決事項（Open Questions）</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="info-box amber">
+      <strong>寫好 spec 的黃金守則：</strong>每一條需求都必須可測試。「介面要好看」「速度要快」這類模糊字眼，要改成「首頁載入時間 &lt; 2 秒」「按鈕在 1024px 以上螢幕顯示為水平排列」等具體可驗證的條件。
+    </div>
+
+    <h4 style="font-size:16px;margin:18px 0 10px;font-weight:700;">SDD Prompt 模板（直接貼給 AI）</h4>
+    <div class="prompt-box">
+      <div class="prompt-label">SDD Agent Prompt</div>
+<pre>你現在是我的 Spec-Driven Development AI Agent。
+你的任務不是直接寫程式，而是先把需求整理成
+可實作、可驗收、可追蹤的規格文件，再進入技術規劃與任務拆解。
+
+請嚴格遵守以下流程：
+
+1. 先理解需求
+   - 摘要我提供的需求
+   - 找出不清楚、矛盾、缺失的地方
+   - 若資訊不足，先提出必要問題
+   - 不要自行腦補商業規則
+
+2. 產出 spec.md（等我確認後再繼續）
+   背景與目標 / 問題定義 / In-Out scope /
+   使用者角色 / user flow / 功能需求 /
+   非功能需求 / 資料需求 / API 需求 /
+   權限安全 / 驗收標準 / 風險與未決事項
+
+3. 產出 plan.md（spec 確認後）
+   系統架構 / 前後端方案 / 資料模型 /
+   API contract / 狀態流與錯誤處理 /
+   第三方整合 / 安全性 / 技術風險
+
+4. 產出 tasks.md（plan 確認後）
+   任務編號 / 名稱 / 描述 / 前置依賴 /
+   產出物 / 驗收條件 / 優先級 / 是否可並行
+
+實作守則：
+- 沒有 spec，不開始 coding
+- 沒有 acceptance criteria，不標示完成
+- API 採 design-first，先定 request/response/schema
+- 需求變更，先更新 spec → plan → tasks，不可直接改 code
+
+請先執行第 1 階段：理解需求與提出澄清問題。</pre>
+    </div>
+
+    <div class="info-box">
+      <strong>SDD 核心心法：</strong>「要做什麼」和「怎麼做」必須分開。spec.md 只談業務需求，plan.md 才談技術實作。讓 AI 先把問題說清楚再動工，這才是 AI-Native 開發的正確節奏。
     </div>
   </div>
 
