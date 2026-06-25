@@ -196,7 +196,7 @@
       background: rgba(255, 255, 255, 0.04);
     }
 
-    .grid-2, .grid-3 {
+    .grid-2, .grid-3, .grid-4 {
       display: grid;
       gap: 16px;
       margin-top: 26px;
@@ -204,6 +204,7 @@
 
     .grid-2 { grid-template-columns: 1fr 1fr; }
     .grid-3 { grid-template-columns: repeat(3, 1fr); }
+    .grid-4 { grid-template-columns: repeat(4, 1fr); }
 
     .box {
       background: var(--panel-2);
@@ -355,6 +356,17 @@
       border-color: var(--accent-3);
     }
 
+    .practice-btn.red {
+      background: rgba(255, 122, 122, 0.12);
+      border-color: rgba(255, 122, 122, 0.45);
+      color: var(--danger);
+    }
+
+    .practice-btn.red:hover {
+      background: rgba(255, 122, 122, 0.25);
+      border-color: var(--danger);
+    }
+
     .arrow { font-size: 20px; }
 
     .time-badge {
@@ -422,7 +434,7 @@
       h2 { font-size: 30px; }
       p, li { font-size: 18px; }
       pre { font-size: 15px; }
-      .grid-2, .grid-3, .compare, .flow-5, .flow-4, .agenda-grid { grid-template-columns: 1fr; }
+      .grid-2, .grid-3, .grid-4, .compare, .flow-5, .flow-4, .agenda-grid { grid-template-columns: 1fr; }
       .footer { left: 22px; right: 22px; }
       .progress { width: 110px; }
     }
@@ -460,7 +472,7 @@
             <li><span>LLM 是什麼？它怎麼運作？</span></li>
             <li><span>Token 是什麼？</span></li>
             <li><span>Prompt Engineering</span></li>
-            <li><span>Claude Code 與 Codex 介紹示範</span></li>
+            <li><span>Claude Code、Codex、Gemini 介紹與比較</span></li>
             <li><span>Agent 模式是什麼？</span></li>
             <li><span>MCP（模型上下文協議）</span></li>
             <li><span>Agent Skill 是什麼？</span></li>
@@ -474,7 +486,7 @@
             <li><span>用 AI 找出程式碼問題點</span></li>
             <li><span>整理問題報告 & 改進建議</span></li>
             <li><span>請 AI 提供改善後的程式碼</span></li>
-            <li><span>三個實作練習環節</span></li>
+            <li><span>四個實作練習環節（含 Agent Skill 實作）</span></li>
             <li><span>SDD 規格驅動開發概念</span></li>
           </ul>
         </div>
@@ -593,6 +605,9 @@
           <span class="tag alt">為什麼計費用 Token？</span>
           <p>因為 Token 是 AI 實際運算的單位，不是字數。每個 Token 有唯一的數字編號，再轉成向量進行矩陣運算。</p>
           <p style="margin-top:14px"><strong>Context Window</strong> = AI 的「工作記憶」，超過上限就會開始忘記前面的對話。</p>
+          <p style="margin-top:14px;font-size:15px">
+            <a href="https://platform.openai.com/tokenizer" target="_blank" rel="noopener" style="color:var(--accent-3);font-weight:700;text-decoration:none;border-bottom:1px dashed var(--accent-3)">🔗 實際測試 Token 切法 → OpenAI Tokenizer</a>
+          </p>
         </div>
       </div>
       <div class="notes">建議時間：6 分鐘</div>
@@ -708,6 +723,51 @@
       <div class="notes">建議時間：7 分鐘（含示範）</div>
     </section>
 
+    <!-- ===== SLIDE 13b: 三大工具比較 ===== -->
+    <section class="slide">
+      <div class="eyebrow">AI 開發工具 ③</div>
+      <h2>Claude Code vs Codex vs Gemini：怎麼選？</h2>
+      <div class="grid-3">
+        <div class="box">
+          <span class="tag blue">Claude Code</span>
+          <h3>主力施工隊</h3>
+          <p>讀懂大型專案、終端機改 code、多檔案重構、debug、跑測試。</p>
+          <p style="margin-top:10px;font-size:15px;color:var(--muted)">⚠️ 有時太「敢動」，重構要限制範圍與權限。</p>
+        </div>
+        <div class="box">
+          <span class="tag alt">Codex</span>
+          <h3>架構師 / 審查員</h3>
+          <p>需求拆解、技術規格、PR / code review、補測試、雲端代理任務。</p>
+          <p style="margin-top:10px;font-size:15px;color:var(--muted)">⚠️ 深度操作既有大型專案，仍要靠本機 / IDE 流程接手。</p>
+        </div>
+        <div class="box">
+          <span class="tag red">Gemini Code Assist</span>
+          <h3>大上下文顧問</h3>
+          <p>Google Cloud / Firebase / Android 生態、1M token 超大上下文、IDE agent mode。</p>
+          <p style="margin-top:10px;font-size:15px;color:var(--muted)">⚠️ 非 Google 生態時，優勢沒那麼明顯。</p>
+        </div>
+      </div>
+      <p><strong>結論：</strong>不要只選一個。Claude Code 當主力工程師、Codex 當規劃 / 審查副駕、Gemini 當 Google 生態與大上下文輔助。</p>
+      <div class="notes">建議時間：5 分鐘</div>
+    </section>
+
+    <!-- ===== SLIDE 13c: 三工具怎麼搭配 ===== -->
+    <section class="slide">
+      <div class="eyebrow">AI 開發工具 ④</div>
+      <h2>實戰工作流：三個工具怎麼搭配？</h2>
+      <div class="flow flow-4">
+        <div class="step"><b>① 需求拆解</b><span>Codex：拆規格、API spec、驗收條件、edge cases</span></div>
+        <div class="step"><b>② 實作</b><span>Claude Code：進 repo 改 code、跑測試、回報 diff</span></div>
+        <div class="step"><b>③ 審查</b><span>Codex：review diff，找安全 / 邏輯 / 缺測試</span></div>
+        <div class="step"><b>④ 大文件 / Google 生態</b><span>Gemini：超長規格書、GCP / Firebase / Android</span></div>
+      </div>
+      <div class="box" style="margin-top:20px">
+        <span class="tag">怎麼選</span>
+        <p style="margin-top:8px">只能選一個 → <strong>Claude Code</strong>（terminal + repo 操作最實戰）。選兩個 → <strong>Claude Code + Codex</strong>（一個寫、一個查，最穩的組合）。</p>
+      </div>
+      <div class="notes">建議時間：5 分鐘</div>
+    </section>
+
     <!-- ===== SLIDE 14: Agent 模式 ===== -->
     <section class="slide">
       <div class="eyebrow">Agent Mode</div>
@@ -785,7 +845,10 @@
             <li><span><strong>MCP</strong>：擴充 Agent 的「能力」（提供工具，如查天氣、讀檔案）</span></li>
             <li><span><strong>Agent Skill</strong>：定義 Agent 的「行為準則」（提供說明書，規定步驟與格式）</span></li>
           </ul>
-          <p style="margin-top:14px;font-size:17px">命名規則：資料夾名 = Skill 名稱，檔案必須命名為 <code>Skill.md</code>（首字母大寫）</p>
+          <p style="margin-top:14px;font-size:17px">命名規則：資料夾名 = Skill 名稱，檔案必須命名為 <code>SKILL.md</code>（全大寫），開頭要有 <code>name</code> / <code>description</code> 的 YAML frontmatter</p>
+          <p style="margin-top:14px;font-size:15px">
+            <a href="https://skillsmp.com/" target="_blank" rel="noopener" style="color:var(--accent-3);font-weight:700;text-decoration:none;border-bottom:1px dashed var(--accent-3)">🔗 逛逛現成的 Skill → Skill Marketplace（skillsmp.com）</a>
+          </p>
         </div>
       </div>
       <div class="notes">建議時間：5 分鐘</div>
@@ -795,14 +858,14 @@
     <section class="slide section-slide">
       <div class="section-label">下午課程</div>
       <h1>生成式 AI<br>實戰演練</h1>
-      <p>以工程師日常開發為主題，三個實作任務讓你立刻上手。</p>
+      <p>以工程師日常開發為主題，四個實作任務讓你立刻上手。</p>
     </section>
 
     <!-- ===== SLIDE 16: 下午任務概覽 ===== -->
     <section class="slide">
       <div class="eyebrow">Afternoon Overview</div>
-      <h2>下午三大實作任務</h2>
-      <div class="grid-3">
+      <h2>下午四大實作任務</h2>
+      <div class="grid-4">
         <div class="box">
           <span class="tag blue">任務 A</span>
           <h3>Debug 任務</h3>
@@ -817,6 +880,11 @@
           <span class="tag alt">任務 C</span>
           <h3>API Test 任務</h3>
           <p>實作一個調用營養成分 API 的前端應用，讓使用者輸入食物名稱取得營養資訊。</p>
+        </div>
+        <div class="box">
+          <span class="tag red">任務 D</span>
+          <h3>Agent Skill 任務</h3>
+          <p>親手寫一份 Code Review Checklist Skill，存放到 Claude Code 並驗證它有沒有被正確觸發。</p>
         </div>
       </div>
       <p>每個任務都有獨立練習環境，點連結另開新視窗，邊看邊做。</p>
@@ -927,6 +995,23 @@
         </div>
         <a href="api_test/index.html" target="_blank" rel="noopener" class="practice-btn alt">
           <span>開啟 API Test 練習環境</span>
+          <span class="arrow">↗</span>
+        </a>
+      </div>
+      <div class="notes">練習時間：30 分鐘</div>
+    </section>
+
+    <!-- ===== SLIDE 23: 練習 D - Agent Skill ===== -->
+    <section class="slide">
+      <div class="eyebrow">練習環節 D</div>
+      <h2>任務：親手寫一份 Agent Skill</h2>
+      <div class="center-practice">
+        <div>
+          <p class="practice-meta">目標：為「Code Review」這個日常任務寫一份完整的 SKILL.md，存放到 Claude Code 可辨識的目錄，並實際測試觸發與輸出格式。</p>
+          <p class="practice-meta">重點：YAML frontmatter 命名規則、Goals/Steps/Rules/Output Format/Examples 五要素、漸進式披露的邊界測試。</p>
+        </div>
+        <a href="agent_skill/index.html" target="_blank" rel="noopener" class="practice-btn red">
+          <span>開啟 Agent Skill 練習環境</span>
           <span class="arrow">↗</span>
         </a>
       </div>

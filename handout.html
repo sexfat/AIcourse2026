@@ -510,6 +510,7 @@
         <a href="#practice-debug">Debug 任務</a>
         <a href="#practice-ui">UI Design 任務</a>
         <a href="#practice-api">API Test 任務</a>
+        <a href="#practice-agent-skill">Agent Skill 任務</a>
         <a href="#sdd">Spec 規格驅動開發</a>
         <a href="#best-practices">協作心法</a>
         <a href="#prompt-template">Prompt 模板</a>
@@ -800,8 +801,9 @@
         <div class="card-label">元數據層（Metadata）</div>
         <h4>說明書的封面</h4>
         <ul class="bullet-list" style="margin-top:8px">
-          <li><strong>Name：</strong>技能名稱（如 <code>go out checklist</code>）</li>
-          <li><strong>Description：</strong>功能描述，讓系統判斷何時載入</li>
+          <li>寫在檔案最上方的 <strong>YAML frontmatter</strong>（<code>---</code> 包起來的區塊）</li>
+          <li><strong>name：</strong>技能名稱（如 <code>go-out-checklist</code>）</li>
+          <li><strong>description：</strong>功能描述，讓系統判斷何時載入</li>
         </ul>
         <p style="margin-top:10px;font-size:13px;color:#64748b">系統啟動只讀 Metadata，用到才載入完整指令，節省 Token。</p>
       </div>
@@ -820,9 +822,10 @@
 
     <h4 style="font-size:16px;margin:18px 0 10px;font-weight:700;">存放規則（以 Claude Code 為例）</h4>
     <ul class="bullet-list">
-      <li>資料夾名稱必須與 Skill 名稱<strong>完全相同</strong></li>
-      <li>檔案必須命名為 <code>Skill.md</code>（<strong>首字母 S 必須大寫</strong>）</li>
-      <li>放到系統指定目錄，Agent 啟動時自動偵測</li>
+      <li>資料夾名稱必須與 <code>name</code><strong>完全相同</strong>（如 <code>go-out-checklist/</code>）</li>
+      <li>檔案必須命名為 <code>SKILL.md</code>（<strong>全部字母大寫</strong>，不是只有首字母）</li>
+      <li>檔案開頭必須有 <code>---</code> 包起來的 YAML frontmatter，內含 <code>name</code> 與 <code>description</code></li>
+      <li>放到系統指定目錄（如 <code>~/.claude/skills/</code>），Agent 啟動時自動偵測</li>
     </ul>
 
     <h4 style="font-size:16px;margin:18px 0 10px;font-weight:700;">MCP vs Agent Skill 的使用時機</h4>
@@ -848,6 +851,43 @@
         <td>需要 Agent 執行重複性、有固定格式要求的任務時</td>
       </tr>
     </table>
+
+    <h4 style="font-size:16px;margin:18px 0 10px;font-weight:700;">官方工具：Skill Creator —— 一站式建立 Skill</h4>
+
+    <p>手寫 <code>SKILL.md</code> 最容易出錯的地方，往往不是內容想不清楚，而是 frontmatter 格式、資料夾命名這類「規矩」。Anthropic 官方推出了 <strong>Skill Creator</strong>，本身就是一個 Skill——專門用來引導你產生其他 Skill，內建在 Claude（claude.ai / Claude Desktop / Claude Code）裡可以直接呼叫。</p>
+
+    <div class="analogy">
+      <div class="analogy-label">比喻</div>
+      <strong>Skill Creator</strong> 就像請一位熟悉公司規範的資深同事，幫新手寫 SOP 手冊——你只要把想法講清楚，他會處理格式、命名、目錄結構這些瑣碎但容易出錯的細節。
+    </div>
+
+    <h4 style="font-size:16px;margin:18px 0 10px;font-weight:700;">Skill Creator 內建的三個工具</h4>
+    <div class="compare">
+      <div class="card blue">
+        <div class="card-label">init_skill.py</div>
+        <p style="margin-top:8px;font-size:13px">建立骨架：產生符合規範的 <code>SKILL.md</code> 模板，以及 <code>scripts/</code>、<code>references/</code>、<code>assets/</code> 範例目錄。</p>
+      </div>
+      <div class="card teal">
+        <div class="card-label">quick_validate.py</div>
+        <p style="margin-top:8px;font-size:13px">驗證格式：檢查 frontmatter 是否存在、YAML 語法是否正確、必填欄位是否齊全。</p>
+      </div>
+      <div class="card">
+        <div class="card-label" style="background:#64748b;color:#fff">package_skill.py</div>
+        <p style="margin-top:8px;font-size:13px">打包發布：把整個資料夾壓縮成一個 <code>.skill</code> 檔，方便分享或上傳給其他人安裝。</p>
+      </div>
+    </div>
+
+    <h4 style="font-size:16px;margin:18px 0 10px;font-weight:700;">如何使用</h4>
+    <div class="flow flow-4">
+      <div class="step"><b>① 開口描述</b><span>跟 Claude 說「幫我用 skill-creator 建立一個 OO 的 Skill」，描述用途與典型情境</span></div>
+      <div class="step"><b>② 互動釐清</b><span>Claude 會反問細節（觸發情境、步驟、輸出格式），協助把 description 寫得夠具體</span></div>
+      <div class="step"><b>③ 產生與填寫</b><span>執行 <code>init_skill.py</code> 產生骨架，再依 TODO 提示把 Overview、步驟、規則寫完整</span></div>
+      <div class="step"><b>④ 驗證與打包</b><span>用 <code>quick_validate.py</code> 檢查格式，沒問題再用 <code>package_skill.py</code> 打包成 <code>.skill</code> 檔</span></div>
+    </div>
+
+    <div class="info-box blue" style="margin-top:16px">
+      <strong>小提醒：</strong>Skill Creator 產生的只是「骨架」與「格式檢查」，指令層裡 Goals/Steps/Rules 寫得夠不夠精準，還是要靠你對任務本身的理解——工具能幫你不犯格式上的低級錯誤，但不能取代想清楚「這個 Skill 到底要解決什麼問題」。
+    </div>
   </div>
 
   <!-- 8. Tools -->
@@ -893,13 +933,14 @@
   <!-- Practice overview -->
   <div class="article">
     <div class="article-num">下午概覽</div>
-    <h3>三個實作任務</h3>
+    <h3>四個實作任務</h3>
     <p>以工程師日常開發為主題，每個任務都有獨立練習環境，請點連結另開新視窗操作。</p>
 
-    <div class="flow flow-3" style="margin-top:16px">
+    <div class="flow flow-4" style="margin-top:16px">
       <div class="step"><b>任務 A — Debug</b><span>了解陌生專案架構，找出技術債與問題點，整理報告</span></div>
       <div class="step"><b>任務 B — UI Design</b><span>用結構化 Prompt 引導 AI 生成卡路里紀錄 Dashboard</span></div>
       <div class="step"><b>任務 C — API Test</b><span>實作調用營養成分 API 的前端應用</span></div>
+      <div class="step"><b>任務 D — Agent Skill</b><span>親手寫一份 Code Review Checklist Skill 並驗證觸發</span></div>
     </div>
   </div>
 
@@ -1033,6 +1074,61 @@ JavaScript 邏輯先留白，我們稍後處理。</pre>
         <strong>重點：</strong>學習如何用 AI 處理 API 串接、錯誤處理、非同步邏輯，以及如何驗收 AI 產出的程式碼。<br>
         <strong>預計時間：</strong>30 分鐘
       </div>
+    </div>
+  </div>
+
+  <!-- Agent Skill -->
+  <div class="article" id="practice-agent-skill">
+    <div class="article-num">任務 D</div>
+    <h3>親手寫一份 Agent Skill：Code Review Checklist</h3>
+
+    <div class="practice-card">
+      <div class="practice-header">
+        <h4>Agent Skill 練習環境</h4>
+        <a href="agent_skill/index.html" target="_blank" rel="noopener">開啟練習 ↗</a>
+      </div>
+      <div class="practice-body">
+        <strong>目標：</strong>為「Code Review」這個日常任務寫一份完整的 <code>SKILL.md</code>，存放到 Claude Code 可辨識的目錄，並實際測試觸發與輸出格式。<br>
+        <strong>建議工具：</strong>Claude Code &nbsp;|&nbsp; <strong>預計時間：</strong>30 分鐘
+      </div>
+    </div>
+
+    <h4 style="font-size:16px;margin:18px 0 10px;font-weight:700;">Step 1：先看一份真實範例</h4>
+    <div class="prompt-box">
+      <div class="prompt-label">終端機指令</div>
+<pre>cat ~/.claude/skills/git-commit-summary/SKILL.md</pre>
+    </div>
+    <p>觀察重點：YAML frontmatter（<code>name</code> / <code>description</code>）、資料夾名稱與 <code>name</code> 完全一致、檔名是全大寫的 <code>SKILL.md</code>。</p>
+
+    <h4 style="font-size:16px;margin:18px 0 10px;font-weight:700;">Step 2–3：設計 Metadata 與 Instructions 五要素</h4>
+    <div class="compare">
+      <div class="card blue">
+        <div class="card-label">Metadata 層</div>
+        <ul class="bullet-list" style="margin-top:8px">
+          <li><strong>name：</strong>如 <code>code-review-checklist</code></li>
+          <li><strong>description：</strong>寫清楚使用者實際會說的話</li>
+        </ul>
+      </div>
+      <div class="card teal">
+        <div class="card-label">Instructions 層</div>
+        <ul class="bullet-list" style="margin-top:8px">
+          <li><strong>Goals / Steps：</strong>先抓 diff，再逐項檢查</li>
+          <li><strong>Rules：</strong>嚴重度判斷邏輯，含「沒問題也要說沒問題」</li>
+          <li><strong>Output Format：</strong>固定結論 + 問題表格</li>
+          <li><strong>Examples：</strong>輸入 → 期待輸出的範例</li>
+        </ul>
+      </div>
+    </div>
+
+    <h4 style="font-size:16px;margin:18px 0 10px;font-weight:700;">Step 4–5：存放與測試</h4>
+    <div class="flow flow-3">
+      <div class="step"><b>Step 4</b><span><code>mkdir -p ~/.claude/skills/code-review-checklist</code>，存成全大寫 <code>SKILL.md</code></span></div>
+      <div class="step"><b>Step 5</b><span>開新對話，貼有問題的程式碼測試「該觸發」</span></div>
+      <div class="step"><b>Step 6</b><span>問不相關問題，確認「不該觸發時沒有誤觸發」</span></div>
+    </div>
+
+    <div class="info-box amber" style="margin-top:16px">
+      <strong>邊界測試：</strong>貼一段完全乾淨的程式碼，確認 Agent 會老實說「沒有發現問題」，而不是為了符合你規定的輸出格式硬掰問題出來。這是檢驗 Rules 寫得夠不夠完整的關鍵測試。
     </div>
   </div>
 
